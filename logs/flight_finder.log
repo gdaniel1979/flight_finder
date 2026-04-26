@@ -1,0 +1,476 @@
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-26 02:39:05 | 2341s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  19 járatpár:
+
+    1. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 56.98 EUR | Ryanair
+    2. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 67.98 EUR | Ryanair
+    3. 2026-05-10 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 71.98 EUR | Ryanair
+    4. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 39.98 EUR | Ryanair
+    5. 2026-05-15 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 66.18 EUR | Ryanair
+    6. 2026-05-18 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 40.98 EUR | Ryanair
+    7. 2026-05-20 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 60.98 EUR | Ryanair
+    8. 2026-05-21 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 50.20 EUR | Ryanair
+    9. 2026-05-22 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 78.20 EUR | Ryanair
+   10. 2026-05-25 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 75.47 EUR | Ryanair
+   11. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 61.64 EUR | Ryanair
+   12. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 68.68 EUR | Ryanair
+   13. 2026-05-16 | PRG (Prague) | oda 05:45 | vissza 20:40 | 74.42 EUR | Ryanair
+   14. 2026-05-23 | PRG (Prague) | oda 05:45 | vissza 20:40 | 74.67 EUR | Ryanair
+   15. 2026-05-05 | CIA (Rome) | oda 06:50 | vissza 21:05 | 49.35 EUR | Ryanair
+   16. 2026-05-19 | CIA (Rome) | oda 06:50 | vissza 21:05 | 65.97 EUR | Ryanair
+   17. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 35.70 EUR | Ryanair
+   18. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 40.42 EUR | Ryanair
+   19. 2026-05-23 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 40.47 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-25 02:39:07 | 2344s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  21 járatpár:
+
+    1. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 57.98 EUR | Ryanair
+    2. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 70.98 EUR | Ryanair
+    3. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 61.98 EUR | Ryanair
+    4. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 50.98 EUR | Ryanair
+    5. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 46.65 EUR | Ryanair
+    6. 2026-05-15 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 69.46 EUR | Ryanair
+    7. 2026-05-18 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 49.98 EUR | Ryanair
+    8. 2026-05-20 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 62.98 EUR | Ryanair
+    9. 2026-05-21 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 45.70 EUR | Ryanair
+   10. 2026-05-22 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 78.47 EUR | Ryanair
+   11. 2026-05-25 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 75.20 EUR | Ryanair
+   12. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 61.64 EUR | Ryanair
+   13. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 67.16 EUR | Ryanair
+   14. 2026-05-16 | PRG (Prague) | oda 05:45 | vissza 20:40 | 72.96 EUR | Ryanair
+   15. 2026-05-05 | CIA (Rome) | oda 06:50 | vissza 21:05 | 49.35 EUR | Ryanair
+   16. 2026-05-12 | CIA (Rome) | oda 06:50 | vissza 21:05 | 54.78 EUR | Ryanair
+   17. 2026-05-19 | CIA (Rome) | oda 06:50 | vissza 21:05 | 70.69 EUR | Ryanair
+   18. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 52.69 EUR | Ryanair
+   19. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 36.12 EUR | Ryanair
+   20. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 40.38 EUR | Ryanair
+   21. 2026-05-23 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 38.98 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-24 14:40:54 | 2349s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  20 járatpár:
+
+    1. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 59.98 EUR | Ryanair
+    2. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 64.98 EUR | Ryanair
+    3. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 63.98 EUR | Ryanair
+    4. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 56.98 EUR | Ryanair
+    5. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 47.65 EUR | Ryanair
+    6. 2026-05-15 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 71.46 EUR | Ryanair
+    7. 2026-05-18 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 52.98 EUR | Ryanair
+    8. 2026-05-20 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 63.98 EUR | Ryanair
+    9. 2026-05-21 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 45.70 EUR | Ryanair
+   10. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 61.64 EUR | Ryanair
+   11. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 67.16 EUR | Ryanair
+   12. 2026-05-16 | PRG (Prague) | oda 05:45 | vissza 20:40 | 72.96 EUR | Ryanair
+   13. 2026-05-05 | CIA (Rome) | oda 06:50 | vissza 21:05 | 52.35 EUR | Ryanair
+   14. 2026-05-12 | CIA (Rome) | oda 06:50 | vissza 21:05 | 43.98 EUR | Ryanair
+   15. 2026-05-19 | CIA (Rome) | oda 06:50 | vissza 21:05 | 70.69 EUR | Ryanair
+   16. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 57.86 EUR | Ryanair
+   17. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 53.68 EUR | Ryanair
+   18. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 37.12 EUR | Ryanair
+   19. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 39.98 EUR | Ryanair
+   20. 2026-05-23 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 38.98 EUR | Ryanair
+
+. No───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-24 02:39:18 | 2353s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  20 járatpár:
+
+    1. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 57.86 EUR | Ryanair
+    2. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 53.46 EUR | Ryanair
+    3. 2026-05-05 | CIA (Rome) | oda 06:50 | vissza 21:05 | 50.35 EUR | Ryanair
+    4. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 64.98 EUR | Ryanair
+    5. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 72.98 EUR | Ryanair
+    6. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 37.12 EUR | Ryanair
+    7. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 75.38 EUR | Ryanair
+    8. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 58.98 EUR | Ryanair
+    9. 2026-05-12 | CIA (Rome) | oda 06:50 | vissza 21:05 | 51.36 EUR | Ryanair
+   10. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 61.95 EUR | Ryanair
+   11. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 49.98 EUR | Ryanair
+   12. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 62.94 EUR | Ryanair
+   13. 2026-05-15 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 73.04 EUR | Ryanair
+   14. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 40.20 EUR | Ryanair
+   15. 2026-05-16 | PRG (Prague) | oda 05:45 | vissza 20:40 | 75.57 EUR | Ryanair
+   16. 2026-05-18 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 57.98 EUR | Ryanair
+   17. 2026-05-19 | CIA (Rome) | oda 06:50 | vissza 21:05 | 71.14 EUR | Ryanair
+   18. 2026-05-20 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 67.98 EUR | Ryanair
+   19. 2026-05-21 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 53.70 EUR | Ryanair
+   20. 2026-05-23 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 36.12 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-23 02:39:00 | 2335s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  16 járatpár:
+
+    1. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 52.13 EUR | Ryanair
+    2. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 63.29 EUR | Ryanair
+    3. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 62.98 EUR | Ryanair
+    4. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 76.98 EUR | Ryanair
+    5. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 41.47 EUR | Ryanair
+    6. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 62.98 EUR | Ryanair
+    7. 2026-05-12 | CIA (Rome) | oda 06:50 | vissza 21:05 | 65.14 EUR | Ryanair
+    8. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 59.47 EUR | Ryanair
+    9. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 50.17 EUR | Ryanair
+   10. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 71.71 EUR | Ryanair
+   11. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 39.98 EUR | Ryanair
+   12. 2026-05-16 | PRG (Prague) | oda 05:45 | vissza 20:40 | 71.68 EUR | Ryanair
+   13. 2026-05-18 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 62.98 EUR | Ryanair
+   14. 2026-05-20 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 72.98 EUR | Ryanair
+   15. 2026-05-21 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 62.80 EUR | Ryanair
+   16. 2026-05-23 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 37.32 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-22 02:39:08 | 2343s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  13 járatpár:
+
+    1. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 49.13 EUR | Ryanair
+    2. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 52.08 EUR | Ryanair
+    3. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 59.98 EUR | Ryanair
+    4. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 68.98 EUR | Ryanair
+    5. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 40.20 EUR | Ryanair
+    6. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 65.98 EUR | Ryanair
+    7. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 61.95 EUR | Ryanair
+    8. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 49.06 EUR | Ryanair
+    9. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 70.14 EUR | Ryanair
+   10. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 41.10 EUR | Ryanair
+   11. 2026-05-18 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 69.98 EUR | Ryanair
+   12. 2026-05-20 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 70.98 EUR | Ryanair
+   13. 2026-05-21 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 70.80 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-21 02:39:09 | 2346s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  13 járatpár:
+
+    1. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 49.13 EUR | Ryanair
+    2. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 58.98 EUR | Ryanair
+    3. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 47.76 EUR | Ryanair
+    4. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 57.98 EUR | Ryanair
+    5. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 71.98 EUR | Ryanair
+    6. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 36.70 EUR | Ryanair
+    7. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 74.52 EUR | Ryanair
+    8. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 66.14 EUR | Ryanair
+    9. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 54.16 EUR | Ryanair
+   10. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 40.18 EUR | Ryanair
+   11. 2026-05-16 | PRG (Prague) | oda 05:45 | vissza 20:40 | 79.21 EUR | Ryanair
+   12. 2026-05-20 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 61.98 EUR | Ryanair
+   13. 2026-05-21 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 72.80 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-20 02:39:11 | 2347s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  18 járatpár:
+
+    1. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 42.63 EUR | Ryanair
+    2. 2026-04-25 | PRG (Prague) | oda 05:45 | vissza 20:40 | 75.88 EUR | Ryanair
+    3. 2026-04-27 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 70.98 EUR | Ryanair
+    4. 2026-04-28 | CIA (Rome) | oda 06:50 | vissza 21:05 | 75.98 EUR | Ryanair
+    5. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 63.60 EUR | Ryanair
+    6. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 48.06 EUR | Ryanair
+    7. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 54.98 EUR | Ryanair
+    8. 2026-05-07 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 62.98 EUR | Ryanair
+    9. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 70.98 EUR | Ryanair
+   10. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 34.98 EUR | Ryanair
+   11. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 66.65 EUR | Ryanair
+   12. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 57.98 EUR | Ryanair
+   13. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 50.47 EUR | Ryanair
+   14. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 56.47 EUR | Ryanair
+   15. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 55.90 EUR | Ryanair
+   16. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 39.98 EUR | Ryanair
+   17. 2026-05-18 | BGY (Bergamo) | oda 06:05 | vissza 18:00 | 71.06 EUR | Ryanair
+   18. 2026-05-20 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 56.98 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-19 02:39:24 | 2359s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  18 járatpár:
+
+    1. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 43.98 EUR | Ryanair
+    2. 2026-04-27 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 75.98 EUR | Ryanair
+    3. 2026-04-28 | CIA (Rome) | oda 06:50 | vissza 21:05 | 76.32 EUR | Ryanair
+    4. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 57.98 EUR | Ryanair
+    5. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 48.06 EUR | Ryanair
+    6. 2026-05-04 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 79.98 EUR | Ryanair
+    7. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 53.98 EUR | Ryanair
+    8. 2026-05-07 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 64.98 EUR | Ryanair
+    9. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 73.98 EUR | Ryanair
+   10. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 35.70 EUR | Ryanair
+   11. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 74.92 EUR | Ryanair
+   12. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 59.98 EUR | Ryanair
+   13. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 46.20 EUR | Ryanair
+   14. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 57.95 EUR | Ryanair
+   15. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 53.46 EUR | Ryanair
+   16. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 40.20 EUR | Ryanair
+   17. 2026-05-16 | PRG (Prague) | oda 05:45 | vissza 20:40 | 69.88 EUR | Ryanair
+   18. 2026-05-18 | BGY (Bergamo) | oda 06:05 | vissza 18:00 | 71.98 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-18 02:39:32 | 2367s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  17 járatpár:
+
+    1. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 44.98 EUR | Ryanair
+    2. 2026-04-27 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 70.98 EUR | Ryanair
+    3. 2026-04-28 | CIA (Rome) | oda 06:50 | vissza 21:05 | 76.32 EUR | Ryanair
+    4. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 57.60 EUR | Ryanair
+    5. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 51.73 EUR | Ryanair
+    6. 2026-05-04 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 73.98 EUR | Ryanair
+    7. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 50.98 EUR | Ryanair
+    8. 2026-05-07 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 68.88 EUR | Ryanair
+    9. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 75.98 EUR | Ryanair
+   10. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 34.98 EUR | Ryanair
+   11. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 73.55 EUR | Ryanair
+   12. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 56.98 EUR | Ryanair
+   13. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 46.20 EUR | Ryanair
+   14. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 60.80 EUR | Ryanair
+   15. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 56.22 EUR | Ryanair
+   16. 2026-05-15 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 77.47 EUR | Ryanair
+   17. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 39.98 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-17 15:14:44 | 212s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  11 járatpár:
+
+    1. 2026-04-27 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 61.98 EUR | Ryanair
+    2. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 57.60 EUR | Ryanair
+    3. 2026-05-04 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 63.98 EUR | Ryanair
+    4. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 49.98 EUR | Ryanair
+    5. 2026-05-07 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 61.69 EUR | Ryanair
+    6. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 72.98 EUR | Ryanair
+    7. 2026-05-10 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 76.98 EUR | Ryanair
+    8. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 56.98 EUR | Ryanair
+    9. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 46.20 EUR | Ryanair
+   10. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 60.80 EUR | Ryanair
+   11. 2026-05-15 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 75.47 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-17 14:09:41 | 271s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  19 járatpár:
+
+    1. 2026-04-27 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 61.98 EUR | Ryanair
+    2. 2026-04-28 | STN (London) | oda 06:00 | vissza 20:30 | 55.20 EUR | Ryanair
+    3. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 57.60 EUR | Ryanair
+    4. 2026-05-04 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 60.98 EUR | Ryanair
+    5. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 49.98 EUR | Ryanair
+    6. 2026-05-07 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 61.69 EUR | Ryanair
+    7. 2026-05-07 | STN (London) | oda 05:50 | vissza 19:25 | 79.69 EUR | Ryanair
+    8. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 72.98 EUR | Ryanair
+    9. 2026-05-09 | STN (London) | oda 06:00 | vissza 20:00 | 56.24 EUR | Ryanair
+   10. 2026-05-10 | STN (London) | oda 05:45 | vissza 18:30 | 59.05 EUR | Ryanair
+   11. 2026-05-10 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 76.98 EUR | Ryanair
+   12. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 56.98 EUR | Ryanair
+   13. 2026-05-12 | STN (London) | oda 06:00 | vissza 20:30 | 56.24 EUR | Ryanair
+   14. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 46.20 EUR | Ryanair
+   15. 2026-05-14 | STN (London) | oda 05:50 | vissza 19:25 | 57.33 EUR | Ryanair
+   16. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 60.80 EUR | Ryanair
+   17. 2026-05-15 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 74.47 EUR | Ryanair
+   18. 2026-05-16 | STN (London) | oda 06:00 | vissza 20:00 | 56.83 EUR | Ryanair
+   19. 2026-05-17 | STN (London) | oda 05:45 | vissza 18:30 | 77.23 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-17 13:47:41 | 2923s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  28 járatpár:
+
+    1. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 39.98 EUR | Ryanair
+    2. 2026-04-27 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 61.98 EUR | Ryanair
+    3. 2026-04-28 | STN (London) | oda 06:00 | vissza 20:30 | 55.20 EUR | Ryanair
+    4. 2026-04-28 | CIA (Rome) | oda 06:50 | vissza 21:05 | 70.32 EUR | Ryanair
+    5. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 55.60 EUR | Ryanair
+    6. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 43.00 EUR | Ryanair
+    7. 2026-05-04 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 60.98 EUR | Ryanair
+    8. 2026-05-05 | CIA (Rome) | oda 06:50 | vissza 21:05 | 79.05 EUR | Ryanair
+    9. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 49.98 EUR | Ryanair
+   10. 2026-05-06 | EDI (Edinburgh) | oda 06:10 | vissza 19:55 | 68.04 EUR | Ryanair
+   11. 2026-05-07 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 61.69 EUR | Ryanair
+   12. 2026-05-07 | STN (London) | oda 05:50 | vissza 19:25 | 79.69 EUR | Ryanair
+   13. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 72.98 EUR | Ryanair
+   14. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 34.98 EUR | Ryanair
+   15. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 55.62 EUR | Ryanair
+   16. 2026-05-09 | STN (London) | oda 06:00 | vissza 20:00 | 56.24 EUR | Ryanair
+   17. 2026-05-10 | STN (London) | oda 05:45 | vissza 18:30 | 58.70 EUR | Ryanair
+   18. 2026-05-10 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 76.98 EUR | Ryanair
+   19. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 56.98 EUR | Ryanair
+   20. 2026-05-12 | STN (London) | oda 06:00 | vissza 20:30 | 56.24 EUR | Ryanair
+   21. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 46.20 EUR | Ryanair
+   22. 2026-05-14 | STN (London) | oda 05:50 | vissza 19:25 | 57.33 EUR | Ryanair
+   23. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 60.80 EUR | Ryanair
+   24. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 56.22 EUR | Ryanair
+   25. 2026-05-15 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 74.47 EUR | Ryanair
+   26. 2026-05-16 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 39.98 EUR | Ryanair
+   27. 2026-05-16 | STN (London) | oda 06:00 | vissza 20:00 | 56.71 EUR | Ryanair
+   28. 2026-05-17 | STN (London) | oda 05:45 | vissza 18:30 | 77.23 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-15 02:39:48 | 2384s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  23 járatpár:
+
+    1. 2026-04-21 | CIA (Rome) | oda 06:50 | vissza 21:05 | 73.10 EUR | Ryanair
+    2. 2026-04-22 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 49.08 EUR | Ryanair
+    3. 2026-04-23 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 57.31 EUR | Ryanair
+    4. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 33.44 EUR | Ryanair
+    5. 2026-04-25 | PRG (Prague) | oda 05:45 | vissza 20:40 | 59.71 EUR | Ryanair
+    6. 2026-04-27 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 67.98 EUR | Ryanair
+    7. 2026-04-28 | CIA (Rome) | oda 06:50 | vissza 21:05 | 59.32 EUR | Ryanair
+    8. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 48.53 EUR | Ryanair
+    9. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 34.19 EUR | Ryanair
+   10. 2026-05-04 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 79.98 EUR | Ryanair
+   11. 2026-05-05 | CIA (Rome) | oda 06:50 | vissza 21:05 | 45.65 EUR | Ryanair
+   12. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 51.98 EUR | Ryanair
+   13. 2026-05-07 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 41.98 EUR | Ryanair
+   14. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 71.98 EUR | Ryanair
+   15. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 35.09 EUR | Ryanair
+   16. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 64.35 EUR | Ryanair
+   17. 2026-05-10 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 76.98 EUR | Ryanair
+   18. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 54.98 EUR | Ryanair
+   19. 2026-05-12 | CIA (Rome) | oda 06:50 | vissza 21:05 | 45.18 EUR | Ryanair
+   20. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 44.65 EUR | Ryanair
+   21. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 47.99 EUR | Ryanair
+   22. 2026-05-15 | BER (Berlin) | oda 08:40 | vissza 21:55 | 51.32 EUR | Ryanair
+   23. 2026-05-15 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 63.14 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-14 09:27:41 | 2380s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  25 járatpár:
+
+    1. 2026-04-18 | PRG (Prague) | oda 05:45 | vissza 20:40 | 65.63 EUR | Ryanair
+    2. 2026-04-18 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 76.98 EUR | Ryanair
+    3. 2026-04-21 | CIA (Rome) | oda 06:50 | vissza 21:05 | 33.98 EUR | Ryanair
+    4. 2026-04-22 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 38.98 EUR | Ryanair
+    5. 2026-04-23 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 29.98 EUR | Ryanair
+    6. 2026-04-24 | BER (Berlin) | oda 08:40 | vissza 21:55 | 61.18 EUR | Ryanair
+    7. 2026-04-24 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 66.83 EUR | Ryanair
+    8. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 31.98 EUR | Ryanair
+    9. 2026-04-25 | PRG (Prague) | oda 05:45 | vissza 20:40 | 58.99 EUR | Ryanair
+   10. 2026-04-27 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 64.98 EUR | Ryanair
+   11. 2026-04-28 | CIA (Rome) | oda 06:50 | vissza 21:05 | 59.32 EUR | Ryanair
+   12. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 44.98 EUR | Ryanair
+   13. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 38.29 EUR | Ryanair
+   14. 2026-05-05 | CIA (Rome) | oda 06:50 | vissza 21:05 | 39.98 EUR | Ryanair
+   15. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 53.98 EUR | Ryanair
+   16. 2026-05-07 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 34.98 EUR | Ryanair
+   17. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 71.98 EUR | Ryanair
+   18. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 34.98 EUR | Ryanair
+   19. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 70.10 EUR | Ryanair
+   20. 2026-05-10 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 79.98 EUR | Ryanair
+   21. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 53.98 EUR | Ryanair
+   22. 2026-05-11 | BCN (Barcelona) | oda 08:40 | vissza 20:05 | 79.98 EUR | Ryanair
+   23. 2026-05-12 | CIA (Rome) | oda 06:50 | vissza 21:05 | 43.98 EUR | Ryanair
+   24. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 41.65 EUR | Ryanair
+   25. 2026-05-14 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 37.98 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-13 22:38:40 | 2935s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  74 járatpár:
+
+    1. 2026-04-23 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 29.98 EUR | Ryanair
+    2. 2026-04-25 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 31.98 EUR | Ryanair
+    3. 2026-05-09 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 35.36 EUR | Ryanair
+    4. 2026-04-21 | CIA (Rome) | oda 06:50 | vissza 21:05 | 37.65 EUR | Ryanair
+    5. 2026-05-07 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 38.48 EUR | Ryanair
+    6. 2026-05-13 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 40.62 EUR | Ryanair
+    7. 2026-04-22 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 40.78 EUR | Ryanair
+    8. 2026-05-02 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 41.98 EUR | Ryanair
+    9. 2026-04-29 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 42.98 EUR | Ryanair
+   10. 2026-05-05 | CIA (Rome) | oda 06:50 | vissza 21:05 | 46.08 EUR | Ryanair
+   11. 2026-04-28 | STN (London) | oda 06:00 | vissza 20:30 | 50.63 EUR | Ryanair
+   12. 2026-05-12 | CIA (Rome) | oda 06:50 | vissza 21:05 | 50.92 EUR | Ryanair
+   13. 2026-05-06 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 53.98 EUR | Ryanair
+   14. 2026-05-11 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 53.98 EUR | Ryanair
+   15. 2026-05-12 | STN (London) | oda 06:00 | vissza 20:30 | 56.96 EUR | Ryanair
+   16. 2026-05-09 | STN (London) | oda 06:00 | vissza 20:00 | 57.67 EUR | Ryanair
+   17. 2026-04-14 | CIA (Rome) | oda 06:50 | vissza 21:05 | 58.15 EUR | Ryanair
+   18. 2026-05-07 | STN (London) | oda 05:50 | vissza 19:25 | 62.08 EUR | Ryanair
+   19. 2026-04-28 | CIA (Rome) | oda 06:50 | vissza 21:05 | 62.31 EUR | Ryanair
+   20. 2026-04-25 | PRG (Prague) | oda 05:45 | vissza 20:40 | 62.31 EUR | Ryanair
+   21. 2026-04-18 | PRG (Prague) | oda 05:45 | vissza 20:40 | 62.45 EUR | Ryanair
+   22. 2026-04-24 | BER (Berlin) | oda 08:40 | vissza 21:55 | 62.71 EUR | Ryanair
+   23. 2026-05-10 | STN (London) | oda 05:45 | vissza 18:30 | 64.74 EUR | Ryanair
+   24. 2026-04-27 | BGY (Bergamo) | oda 06:05 | vissza 18:00 | 64.76 EUR | Ryanair
+   25. 2026-05-05 | STN (London) | oda 06:00 | vissza 20:30 | 65.62 EUR | Ryanair
+   26. 2026-04-16 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 67.53 EUR | Ryanair
+   27. 2026-04-25 | STN (London) | oda 06:00 | vissza 20:00 | 71.73 EUR | Ryanair
+   28. 2026-05-08 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 71.98 EUR | Ryanair
+   29. 2026-05-09 | PRG (Prague) | oda 05:45 | vissza 20:40 | 76.16 EUR | Ryanair
+   30. 2026-04-24 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 78.98 EUR | Ryanair
+   31. 2026-05-11 | BCN (Barcelona) | oda 08:40 | vissza 20:05 | 79.98 EUR | Ryanair
+   32. 2026-05-10 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 79.98 EUR | Ryanair
+   33. 2026-04-18 | SOF (Sofia) | oda 07:05 | vissza 20:55 | 80.48 EUR | Ryanair
+   34. 2026-04-17 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 81.13 EUR | Ryanair
+   35. 2026-05-06 | EDI (Edinburgh) | oda 06:10 | vissza 19:55 | 82.08 EUR | Ryanair
+   36. 2026-04-29 | EDI (Edinburgh) | oda 06:25 | vissza 19:55 | 82.20 EUR | Ryanair
+   37. 2026-05-01 | BGY (Bergamo) | oda 08:00 | vissza 21:20 | 82.98 EUR | Ryanair
+   38. 2026-04-26 | STN (London) | oda 05:45 | vissza 18:30 | 83.89 EUR | Ryanair
+   39. 2026-05-04 | BGY (Bergamo) | oda 06:05 | vissza 22:15 | 86.98 EUR | Ryanair
+   40. 2026-04-18 | BGY (Bergamo) | oda 06:05 | vissza 20:05 | 88.73 EUR | Ryanair
+   41. 2026-05-02 | STN (London) | oda 06:00 | vissza 20:00 | 90.79 EUR | Ryanair
+   42. 2026-05-08 | BER (Berlin) | oda 08:40 | vissza 21:55 | 92.00 EUR | Ryanair
+   43. 2026-04-30 | BGY (Bergamo) | oda 05:55 | vissza 22:00 | 95.38 EUR | Ryanair
+   44. 2026-05-01 | BER (Berlin) | oda 08:40 | vissza 21:55 | 101.59 EUR | Ryanair
+   45. 2026-05-13 | EDI (Edinburgh) | oda 06:10 | vissza 19:55 | 101.70 EUR | Ryanair
+   46. 2026-05-02 | PRG (Prague) | oda 05:45 | vissza 20:40 | 106.58 EUR | Ryanair
+   47. 2026-05-04 | BVA (Paris) | oda 06:30 | vissza 21:40 | 108.98 EUR | Ryanair
+   48. 2026-05-10 | DUB (Dublin) | oda 06:15 | vissza 19:20 | 111.23 EUR | Ryanair
+   49. 2026-04-20 | BGY (Bergamo) | oda 06:05 | vissza 18:00 | 111.33 EUR | Ryanair
+   50. 2026-04-27 | BCN (Barcelona) | oda 08:40 | vissza 20:05 | 116.98 EUR | Ryanair
+   51. 2026-04-23 | STN (London) | oda 05:50 | vissza 19:25 | 119.01 EUR | Ryanair
+   52. 2026-04-27 | BVA (Paris) | oda 06:30 | vissza 21:40 | 122.98 EUR | Ryanair
+   53. 2026-04-19 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 127.28 EUR | Ryanair
+   54. 2026-04-20 | BCN (Barcelona) | oda 08:40 | vissza 20:05 | 131.98 EUR | Ryanair
+   55. 2026-04-17 | BER (Berlin) | oda 08:40 | vissza 21:55 | 138.14 EUR | Ryanair
+   56. 2026-05-03 | DUB (Dublin) | oda 06:15 | vissza 19:20 | 139.98 EUR | Ryanair
+   57. 2026-05-03 | STN (London) | oda 05:45 | vissza 18:30 | 140.34 EUR | Ryanair
+   58. 2026-04-30 | STN (London) | oda 05:50 | vissza 19:25 | 142.98 EUR | Ryanair
+   59. 2026-05-11 | BVA (Paris) | oda 06:30 | vissza 21:40 | 146.39 EUR | Ryanair
+   60. 2026-04-18 | ATH (Athens) | oda 06:40 | vissza 20:45 | 151.68 EUR | Ryanair
+   61. 2026-04-26 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 153.53 EUR | Ryanair
+   62. 2026-04-22 | EDI (Edinburgh) | oda 06:25 | vissza 19:55 | 161.00 EUR | Ryanair
+   63. 2026-05-03 | BGY (Bergamo) | oda 05:50 | vissza 21:55 | 166.30 EUR | Ryanair
+   64. 2026-04-21 | STN (London) | oda 06:00 | vissza 20:30 | 166.79 EUR | Ryanair
+   65. 2026-04-20 | BVA (Paris) | oda 06:30 | vissza 21:40 | 176.80 EUR | Ryanair
+   66. 2026-04-26 | DUB (Dublin) | oda 06:15 | vissza 19:20 | 192.58 EUR | Ryanair
+   67. 2026-04-15 | BGY (Bergamo) | oda 06:20 | vissza 18:25 | 194.68 EUR | Ryanair
+   68. 2026-05-04 | BCN (Barcelona) | oda 08:40 | vissza 20:05 | 197.98 EUR | Ryanair
+   69. 2026-04-18 | STN (London) | oda 06:00 | vissza 20:00 | 202.82 EUR | Ryanair
+   70. 2026-04-15 | EDI (Edinburgh) | oda 06:25 | vissza 19:55 | 254.71 EUR | Ryanair
+   71. 2026-04-14 | STN (London) | oda 06:00 | vissza 20:30 | 265.54 EUR | Ryanair
+   72. 2026-04-19 | STN (London) | oda 05:45 | vissza 18:30 | 267.43 EUR | Ryanair
+   73. 2026-04-16 | STN (London) | oda 05:50 | vissza 19:25 | 368.08 EUR | Ryanair
+   74. 2026-04-19 | DUB (Dublin) | oda 06:15 | vissza 19:20 | 645.48 EUR | Ryanair
+
+───────────────────────────────────────────────────────────────────────────
+Flight Finder | 2026-04-13 21:47:32 | 15s
+  BUD | indulás <9:00 | vissza >18:00 | EUR
+───────────────────────────────────────────────────────────────────────────
+  2 járatpár:
+
+    1. 2026-04-20 | BGY (Bergamo) | oda 06:05 | vissza 18:00 | 89.33 EUR | Ryanair
+    2. 2026-04-20 | BCN (Barcelona) | oda 08:40 | vissza 20:05 | 131.98 EUR | Ryanair
+
