@@ -1,0 +1,54 @@
+# Flight Finder – Konfiguráció
+# ================================
+
+# Keresési beállítások
+search:
+  origin: "BUD"               # Kiindulási repülőtér IATA kódja
+  morning_before: 9           # Reggeli határ: ennyi óra ELŐTT kell indulni (0-12)
+  evening_after: 18           # Esti határ: ennyi óra UTÁN kell visszaindulni (12-23)
+  search_days: 30             # Hány napra előre keresünk (1-90)
+  currency: "EUR"             # Pénznem (EUR, HUF, GBP, stb.)
+  max_price: 80               # Max összár oda-vissza (null = nincs limit)
+
+  # Célállomások szűrése (opcionális)
+  # Ha üres vagy nincs megadva, az összes elérhető célállomást keresi
+  # destinations: ["BCN", "BGY", "STN", "MXP"]
+  destinations: []
+
+  # Kizárt célállomások (opcionális)
+  # Ezeket a célállomásokat kihagyja a keresésből
+  exclude_destinations: ["AMM", "BHX", "BRS", "EDI", "LIS", "LPA", "LPL", "MAD", "MAN", "NCL", "OPO", "RAK", "STN", "TFS"] # []
+
+# Légitársaságok beállításai
+airlines:
+  ryanair:
+    enabled: true
+    currency: "EUR"           # Felülírja a globális currency-t ennél a légitársaságnál
+
+  wizzair:
+    enabled: false             # Még nincs kész
+    currency: "EUR"
+
+  easyjet:
+    enabled: false             # Még nincs kész
+    currency: "EUR"
+
+# Email értesítés (Brevo API)
+email:
+  enabled: true               # true-ra állítsd, ha be akarod kapcsolni
+  brevo_api_key: "xkeysib-???"            # Brevo API kulcs
+  sender_email: "XXX"             # Feladó email cím
+  sender_name: "Flight Finder"
+  recipient_email: "YYY"          # Címzett email cím
+
+# Logging
+logging:
+  level: "INFO"               # DEBUG, INFO, WARNING, ERROR
+  log_file: "logs/flight_finder.log"
+  max_log_size_mb: 10
+  backup_count: 5
+
+# Rate limiting
+rate_limit:
+  request_delay: 1.5          # Minimum várakozás két API kérés között (másodperc)
+  max_retries: 3              # Maximális újrapróbálkozás sikertelen kérésnél
