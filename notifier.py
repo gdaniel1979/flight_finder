@@ -11,7 +11,7 @@ Használat:
         api_key="xkeysib-...",
         sender_email="me@example.com",
         sender_name="Flight Finder",
-        recipient_email="you@example.com",
+        recipient_emails=["you@example.com"],
     )
     notifier.send_day_trips(trips)
 """
@@ -52,13 +52,13 @@ class EmailNotifier:
         self,
         api_key: str,
         sender_email: str,
-        recipient_email: str,
+        recipient_emails: List[str],
         sender_name: str = "Ryanair Finder",
     ):
         self.api_key = api_key
         self.sender_email = sender_email
         self.sender_name = sender_name
-        self.recipient_email = recipient_email
+        self.recipient_emails = recipient_emails
         self.logger = logging.getLogger("email")
 
         self._brevo_v4 = _check_brevo_v4()
@@ -118,11 +118,11 @@ class EmailNotifier:
                 email=self.sender_email,
                 name=self.sender_name,
             ),
-            to=[SendTransacEmailRequestToItem(email=self.recipient_email)],
+            to=[SendTransacEmailRequestToItem(email=e) for e in self.recipient_emails],
             subject=subject,
             html_content=html_content,
         )
-        self.logger.info(f"Email elküldve (brevo v4) → {self.recipient_email}")
+        self.logger.info(f"Email elküldve (brevo v4) → {', '.join(self.recipient_emails)}")
         return True
 
     # ── sib-api-v3-sdk ──
@@ -138,12 +138,12 @@ class EmailNotifier:
         )
         email = sib_api_v3_sdk.SendSmtpEmail(
             sender={"email": self.sender_email, "name": self.sender_name},
-            to=[{"email": self.recipient_email}],
+            to=[{"email": e} for e in self.recipient_emails],
             subject=subject,
             html_content=html_content,
         )
         api_instance.send_transac_email(email)
-        self.logger.info(f"Email elküldve (sib v3) → {self.recipient_email}")
+        self.logger.info(f"Email elküldve (sib v3) → {', '.join(self.recipient_emails)}")
         return True
 
     # ── Közvetlen HTTP ──
@@ -157,7 +157,7 @@ class EmailNotifier:
         }
         payload = {
             "sender": {"name": self.sender_name, "email": self.sender_email},
-            "to": [{"email": self.recipient_email}],
+            "to": [{"email": e} for e in self.recipient_emails],
             "subject": subject,
             "htmlContent": html_content,
         }
@@ -165,7 +165,7 @@ class EmailNotifier:
         try:
             resp = requests.post(url, headers=headers, json=payload, timeout=30)
             resp.raise_for_status()
-            self.logger.info(f"Email elküldve (HTTP) → {self.recipient_email}")
+            self.logger.info(f"Email elküldve (HTTP) → {', '.join(self.recipient_emails)}")
             return True
         except requests.RequestException as e:
             self.logger.error(f"Email küldés sikertelen: {e}")
