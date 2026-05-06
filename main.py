@@ -338,17 +338,21 @@ def main():
 
             api_key = email_config.get("brevo_api_key", "")
             sender_email = email_config.get("sender_email", "")
-            recipient_email = email_config.get("recipient_email", "")
+            recipient_emails = email_config.get("recipient_emails", [])
+            if not recipient_emails:
+                single = email_config.get("recipient_email", "")
+                if single:
+                    recipient_emails = [single]
 
-            if all([api_key, sender_email, recipient_email]):
+            if all([api_key, sender_email, recipient_emails]):
                 notifier = EmailNotifier(
                     api_key=api_key,
                     sender_email=sender_email,
                     sender_name=email_config.get("sender_name", "Flight Finder"),
-                    recipient_email=recipient_email,
+                    recipient_emails=recipient_emails,
                 )
                 success = notifier.send_day_trips(trips)
-                print(f"  Email: {'OK' if success else 'HIBA'} → {recipient_email}")
+                print(f"  Email: {'OK' if success else 'HIBA'} → {', '.join(recipient_emails)}")
             else:
                 print("  Email: hiányos konfiguráció")
 
