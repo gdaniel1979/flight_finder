@@ -26,7 +26,11 @@ airlines:
     currency: "EUR"           # Felülírja a globális currency-t ennél a légitársaságnál
 
   wizzair:
-    enabled: false             # Még nincs kész
+    # Letiltva: a wizzair.com AWS WAF image-CAPTCHA mögött van.
+    # Sem requests, sem Playwright (stealth-tel sem) nem tud átjutni rajta.
+    # Engedélyezéshez fizetős scraping proxy (ScraperAPI / ZenRows) vagy
+    # CAPTCHA-megoldó szolgáltatás (2captcha) kell – lásd CLAUDE.md.
+    enabled: false
     currency: "EUR"
 
   easyjet:
@@ -35,13 +39,13 @@ airlines:
 
 # Email értesítés (Brevo API)
 email:
-  enabled: true                   # true-ra állítsd, ha be akarod kapcsolni
-  brevo_api_key: "xkeysib-???"    # Brevo API kulcs
-  sender_email: "XXX"             # Feladó email cím
+  enabled: true               # true-ra állítsd, ha be akarod kapcsolni
+  brevo_api_key: "xkeysib-YYY            # Brevo API kulcs
+  sender_email: "xxx"             # Feladó email cím
   sender_name: "Flight Finder"
-  recipient_emails:               # Címzett email címek (több is megadható)
-    - "xxx@xxx.com"
-    - "yyy@yyy.com"
+  recipient_emails:                                  # Címzett email címek (több is megadható)
+    - "yyy"
+    - "zzz"
 
 # Logging
 logging:
