@@ -16,7 +16,7 @@ jobs:
           username: gdaniel1979
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            cd /home/gdaniel1979/my_projects/flight_finder
+            cd /home/gdaniel1979/my_projects/flight_finder_ryanair
             git pull
             pip install -r requirements.txt
             sudo systemctl restart flight_finder
