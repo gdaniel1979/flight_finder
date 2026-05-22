@@ -17,7 +17,7 @@ search:
 
   # Kizárt célállomások (opcionális)
   # Ezeket a célállomásokat kihagyja a keresésből
-  exclude_destinations: ["AMM", "BHX", "BRS", "EDI", "LIS", "LPA", "LPL", "MAD", "MAN", "NCL", "OPO", "RAK", "STN", "TFS"] # []
+  exclude_destinations: [] # ["AMM", "BHX", "BRS", "EDI", "LIS", "LPA", "LPL", "MAD", "MAN", "NCL", "OPO", "RAK", "STN", "TFS"]
 
 # Légitársaságok beállításai
 airlines:
