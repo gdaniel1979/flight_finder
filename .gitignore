@@ -1,0 +1,13 @@
+# Titkos config — soha ne menjen GitHubra
+config.yaml
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Logok
+logs/
+*.log
+
+# Jupyter
+.ipynb_checkpoints/

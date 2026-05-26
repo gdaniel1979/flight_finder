@@ -40,12 +40,12 @@ airlines:
 # Email értesítés (Brevo API)
 email:
   enabled: true               # true-ra állítsd, ha be akarod kapcsolni
-  brevo_api_key: "xkeysib-YYY            # Brevo API kulcs
-  sender_email: "xxx"             # Feladó email cím
+  brevo_api_key: "xkeysib-XXX"            # Brevo API kulcs
+  sender_email: "XXX"             # Feladó email cím
   sender_name: "Flight Finder"
   recipient_emails:                                  # Címzett email címek (több is megadható)
-    - "yyy"
-    - "zzz"
+    - "XXX"
+    - "YYY"
 
 # Logging
 logging:
