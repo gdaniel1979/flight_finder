@@ -79,8 +79,9 @@ class EmailNotifier:
             True ha sikeres, False ha nem
         """
         if not trips:
-            self.logger.info("Nincs járatpár – email nem kerül kiküldésre")
-            return True
+            subject = self._build_empty_subject()
+            html = self._build_empty_html()
+            return self._send_email(subject, html)
 
         subject = self._build_subject(trips)
         html = self._build_html(trips)
@@ -189,6 +190,22 @@ class EmailNotifier:
                 f"{cheapest.total_price:.0f} {cheapest.outbound.currency}"
             )
         return f"Ryanair Finder - {len(trips)} járatpár találva"
+
+    def _build_empty_subject(self) -> str:
+        today = datetime.now().strftime("%Y-%m-%d")
+        return f"Ryanair Finder - nincs találat ({today})"
+
+    def _build_empty_html(self) -> str:
+        now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        return f"""
+        <html>
+        <body style="font-family:Arial,sans-serif;color:#333;max-width:800px;margin:0 auto;padding:16px;">
+            <h2 style="color:#1a73e8;">Napi járatpárok</h2>
+            <p style="color:#666;">Generálva: {now}</p>
+            <p style="font-size:15px;">Ma nem volt a feltételeknek megfelelő járatpár. A keresés rendben lefutott.</p>
+        </body>
+        </html>
+        """
 
     def _build_html(self, trips: List[DayTrip]) -> str:
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
