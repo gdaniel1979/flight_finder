@@ -24,6 +24,16 @@ class FlightFilter:
         self.config = config
         self.scrapers = scrapers
 
+    def find_trips(
+        self,
+        destinations: List[str] = None,
+        dates: List[date] = None,
+    ) -> List[DayTrip]:
+        """Belépési pont: a trip_mode alapján egynapos vagy többnapos keresés."""
+        if self.config.trip_mode == "multiday":
+            return self.find_multiday_trips(destinations=destinations, dates=dates)
+        return self.find_day_trips(destinations=destinations, dates=dates)
+
     def find_day_trips(
         self,
         destinations: List[str] = None,
@@ -173,3 +183,144 @@ class FlightFilter:
 
     def find_day_trips_single_date(self, search_date: date, destinations: List[str] = None) -> List[DayTrip]:
         return self.find_day_trips(destinations=destinations, dates=[search_date])
+
+    # ── Többnapos keresés ──
+
+    def find_multiday_trips(
+        self,
+        destinations: List[str] = None,
+        dates: List[date] = None,
+    ) -> List[DayTrip]:
+        """Többnapos utak: reggeli oda az induló napon, esti vissza min_nights–max_nights éjszakával később."""
+        if dates is None:
+            today = date.today()
+            dates = [today + timedelta(days=i) for i in range(1, self.config.search_days + 1)]
+
+        if destinations is None:
+            destinations = self._collect_all_destinations()
+
+        if not destinations:
+            return []
+
+        min_n = self.config.min_nights
+        max_n = self.config.max_nights
+
+        date_from = min(dates)
+        date_to = max(dates)
+        date_set = set(dates)                          # megengedett INDULÓ napok
+        inbound_to = date_to + timedelta(days=max_n)   # a visszaút túlnyúlhat az induló ablakon
+
+        # 1. FÁZIS: Előszűrés
+        print("Előszűrés (cheapestPerDay)...", flush=True)
+        candidates = self._prefilter_multiday(
+            destinations, date_from, date_to, inbound_to, date_set, min_n, max_n
+        )
+
+        if not candidates:
+            print("  Nincs potenciális többnapos kombináció.")
+            return []
+
+        # 2. FÁZIS: Részletes keresés
+        total = len(candidates)
+        print(f"Részletes keresés: {total} kombináció...", flush=True)
+
+        all_trips = []
+        for idx, (dest, d_out, d_back) in enumerate(candidates, 1):
+            try:
+                trips = self._search_destination_dates(dest, d_out, d_back)
+                all_trips.extend(trips)
+                if trips:
+                    print(f"  [{idx}/{total}] {dest} {d_out}→{d_back}: {len(trips)} pár", flush=True)
+            except Exception as e:
+                logger.error(f"Hiba {dest} {d_out}→{d_back}: {e}")
+
+        all_trips.sort(key=lambda t: (
+            t.trip_date, t.return_date,
+            t.total_price if t.total_price is not None else float("inf"),
+        ))
+        return all_trips
+
+    def _prefilter_multiday(
+        self,
+        destinations: List[str],
+        date_from: date,
+        date_to: date,
+        inbound_to: date,
+        date_set: Set[date],
+        min_n: int,
+        max_n: int,
+    ) -> List[Tuple[str, date, date]]:
+
+        candidates: List[Tuple[str, date, date]] = []
+        relevant = 0
+        total = len(destinations)
+
+        for idx, dest in enumerate(destinations, 1):
+            print(f"\r  Előszűrés: {idx}/{total} ({dest})   ", end="", flush=True)
+
+            outbound_dates = self._get_dates_with_flights(
+                self.config.origin, dest, date_from, date_to
+            )
+            inbound_dates = self._get_dates_with_flights(
+                dest, self.config.origin, date_from, inbound_to
+            )
+
+            dest_relevant = False
+            for d_out in sorted(outbound_dates & date_set):
+                for n in range(min_n, max_n + 1):
+                    d_back = d_out + timedelta(days=n)
+                    if d_back in inbound_dates:
+                        candidates.append((dest, d_out, d_back))
+                        dest_relevant = True
+
+            if dest_relevant:
+                relevant += 1
+
+        print(f"\r  Előszűrés kész: {relevant}/{total} célállomás releváns, "
+              f"{len(candidates)} nap-kombináció", flush=True)
+        return candidates
+
+    def _search_destination_dates(
+        self, destination: str, d_out: date, d_back: date
+    ) -> List[DayTrip]:
+        all_outbound: List[Flight] = []
+        all_inbound: List[Flight] = []
+
+        for scraper in self.scrapers:
+            try:
+                all_outbound.extend(scraper.search_outbound_flights(
+                    origin=self.config.origin,
+                    destination=destination,
+                    flight_date=d_out,
+                    before_hour=self.config.morning_before,
+                ))
+            except Exception:
+                pass
+
+            try:
+                all_inbound.extend(scraper.search_return_flights(
+                    origin=destination,
+                    destination=self.config.origin,
+                    flight_date=d_back,
+                    after_hour=self.config.evening_after,
+                ))
+            except Exception:
+                pass
+
+        if not all_outbound or not all_inbound:
+            return []
+
+        trips = []
+        for outbound, inbound in cartesian_product(all_outbound, all_inbound):
+            trip = DayTrip(
+                outbound=outbound,
+                inbound=inbound,
+                trip_date=d_out,
+                return_date=d_back,
+            )
+            if self.config.max_price is not None and trip.total_price is not None:
+                if trip.total_price > self.config.max_price:
+                    continue
+            trips.append(trip)
+
+        return trips

@@ -52,24 +52,40 @@ class Flight(BaseModel):
 
 
 class DayTrip(BaseModel):
-    """Egy napi oda-vissza járatpár."""
+    """Egy oda-vissza járatpár.
+
+    Egynapos útnál a vissza-dátum megegyezik az oda-dátummal (nights == 0);
+    többnapos útnál a `return_date` később van, mint a `trip_date`.
+    """
 
     outbound: Flight
     inbound: Flight
     total_price: Optional[float] = None
-    trip_date: date
+    trip_date: date                       # oda (indulás) napja
+    return_date: Optional[date] = None    # vissza napja; None → egynapos (== trip_date)
 
     def model_post_init(self, __context) -> None:
+        if self.return_date is None:
+            self.return_date = self.trip_date
         if self.total_price is None and self.outbound.price and self.inbound.price:
             self.total_price = self.outbound.price + self.inbound.price
+
+    @property
+    def nights(self) -> int:
+        """Éjszakák száma az úton (egynapos útnál 0)."""
+        return (self.return_date - self.trip_date).days
 
     def summary(self) -> str:
         """Rövid összefoglaló a járatpárról."""
         out_time = self.outbound.departure_time.strftime("%H:%M")
         in_time = self.inbound.departure_time.strftime("%H:%M")
         price_str = f"{self.total_price:.2f} {self.outbound.currency}" if self.total_price else "N/A"
+        if self.nights > 0:
+            date_str = f"{self.trip_date} → {self.return_date} ({self.nights} éj)"
+        else:
+            date_str = f"{self.trip_date}"
         return (
-            f"{self.trip_date} | "
+            f"{date_str} | "
             f"{self.outbound.origin} → {self.outbound.destination} ({self.outbound.destination_city or '?'}) | "
             f"Oda: {out_time} | Vissza: {in_time} | "
             f"Ár: {price_str} | "
@@ -86,3 +102,6 @@ class SearchConfig(BaseModel):
     search_days: int = Field(default=30, ge=1, le=90, description="Hány napra előre keresünk")
     currency: str = "EUR"
     max_price: Optional[float] = None
+    trip_mode: str = Field(default="daytrip", description="'daytrip' (egynapos) vagy 'multiday' (többnapos)")
+    min_nights: int = Field(default=2, ge=1, le=30, description="Többnapos: legkevesebb éjszaka")
+    max_nights: int = Field(default=4, ge=1, le=30, description="Többnapos: legtöbb éjszaka")

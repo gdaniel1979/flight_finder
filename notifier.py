@@ -252,9 +252,17 @@ class EmailNotifier:
                     "color:#1b8a3a;font-weight:bold;" if is_cheapest else "color:#333;"
                 )
 
+                if trip.nights > 0:
+                    date_label = (
+                        f"{trip.trip_date} → {trip.return_date}"
+                        f"<br><span style='color:#888;font-size:12px;'>{trip.nights} éj</span>"
+                    )
+                else:
+                    date_label = f"{trip.trip_date}"
+
                 rows += f"""
                 <tr style="{row_style}">
-                    <td style="padding:8px;border-bottom:1px solid #eee;">{trip.trip_date}</td>
+                    <td style="padding:8px;border-bottom:1px solid #eee;">{date_label}</td>
                     <td style="padding:8px;border-bottom:1px solid #eee;">{o.flight_number or '?'}<br>{o.departure_time.strftime('%H:%M')}</td>
                     <td style="padding:8px;border-bottom:1px solid #eee;">{i.flight_number or '?'}<br>{i.departure_time.strftime('%H:%M')}</td>
                     <td style="padding:8px;border-bottom:1px solid #eee;">{price_str}</td>

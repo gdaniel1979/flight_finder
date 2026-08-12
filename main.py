@@ -96,6 +96,9 @@ def build_search_config(config: dict) -> SearchConfig:
         search_days=search.get("search_days", 30),
         currency=search.get("currency", "EUR"),
         max_price=search.get("max_price"),
+        trip_mode=search.get("trip_mode", "daytrip"),
+        min_nights=search.get("min_nights", 2),
+        max_nights=search.get("max_nights", 4),
     )
 
 
@@ -219,10 +222,16 @@ def format_results(trips: List[DayTrip], config: SearchConfig, duration_sec: flo
     lines = []
     lines.append(f"{'─'*75}")
     lines.append(f"Flight Finder | {now} | {duration_sec:.0f}s")
-    lines.append(
-        f"  {config.origin} | indulás <{config.morning_before}:00 | "
-        f"vissza >{config.evening_after}:00 | {config.currency}"
-    )
+    if config.trip_mode == "multiday":
+        lines.append(
+            f"  {config.origin} | {config.min_nights}-{config.max_nights} éj | "
+            f"indulás <{config.morning_before}:00 | vissza >{config.evening_after}:00 | {config.currency}"
+        )
+    else:
+        lines.append(
+            f"  {config.origin} | indulás <{config.morning_before}:00 | "
+            f"vissza >{config.evening_after}:00 | {config.currency}"
+        )
     lines.append(f"{'─'*75}")
 
     if not trips:
@@ -243,8 +252,12 @@ def format_results(trips: List[DayTrip], config: SearchConfig, duration_sec: flo
             ink = trip.inbound
             price_str = f"{trip.total_price:.2f} {o.currency}" if trip.total_price else "N/A"
             dest_name = o.destination_city or o.destination
+            if trip.nights > 0:
+                date_part = f"{trip.trip_date}→{trip.return_date} ({trip.nights} éj)"
+            else:
+                date_part = f"{trip.trip_date}"
             lines.append(
-                f"  {i:3d}. {trip.trip_date} | {o.destination} ({dest_name}) | "
+                f"  {i:3d}. {date_part} | {o.destination} ({dest_name}) | "
                 f"oda {o.departure_time.strftime('%H:%M')} | "
                 f"vissza {ink.departure_time.strftime('%H:%M')} | "
                 f"{price_str} | {o.airline.value}"
@@ -310,7 +323,7 @@ def main():
     )
 
     flight_filter = FlightFilter(config=search_config, scrapers=scrapers)
-    trips = flight_filter.find_day_trips(destinations=destinations, dates=dates)
+    trips = flight_filter.find_trips(destinations=destinations, dates=dates)
 
     # Időmérés
     duration = (datetime.now() - start_time).total_seconds()

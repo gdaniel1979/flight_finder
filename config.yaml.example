@@ -10,6 +10,13 @@ search:
   currency: "EUR"             # Pénznem (EUR, HUF, GBP, stb.)
   max_price: 80               # Max összár oda-vissza (null = nincs limit)
 
+  # Út típusa:
+  #   "daytrip"  = egynapos oda-vissza (reggel oda, este vissza, ugyanaznap)
+  #   "multiday" = többnapos út (reggel oda az első napon, este vissza az utolsón)
+  trip_mode: "daytrip"
+  min_nights: 2               # csak multiday módban: legkevesebb éjszaka
+  max_nights: 4               # csak multiday módban: legtöbb éjszaka
+
   # Célállomások szűrése (opcionális)
   # Ha üres vagy nincs megadva, az összes elérhető célállomást keresi
   # destinations: ["BCN", "BGY", "STN", "MXP"]

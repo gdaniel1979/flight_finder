@@ -65,6 +65,8 @@ Results are **prepended** to `logs/flight_finder.log` (newest run always at the 
 `config.yaml` is **gitignored** — bootstrap a local copy from `config.yaml.example`. All search parameters live there:
 - `search.origin` — departure airport IATA code (default: `BUD`)
 - `search.morning_before` / `search.evening_after` — time window for outbound/return flights
+- `search.trip_mode` — `daytrip` (same-day out-and-back, the default) or `multiday` (morning outbound on day 1, evening return `min_nights`–`max_nights` later). `FlightFilter.find_trips` dispatches on this; `multiday` builds `(dest, D1, D2)` candidates where `D2 = D1 + n` nights and the return leg extends the prefilter window by `max_nights`. `DayTrip.return_date`/`.nights` carry the span (nights `0` = day trip).
+- `search.min_nights` / `search.max_nights` — night range, `multiday` only
 - `search.destinations` — explicit list; empty means fetch all routes from the API
 - `search.exclude_destinations` — always-excluded IATA codes
 - `airlines.ryanair.enabled` — WizzAir and easyJet stubs exist but are not implemented (see WizzAir note below)
