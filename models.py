@@ -6,8 +6,8 @@ Minden scraper modul ezeket a modelleket használja,
 """
 
 from datetime import datetime, date, time
-from typing import Optional
-from pydantic import BaseModel, Field
+from typing import Literal, Optional
+from pydantic import BaseModel, Field, model_validator
 from enum import Enum
 
 
@@ -102,6 +102,14 @@ class SearchConfig(BaseModel):
     search_days: int = Field(default=30, ge=1, le=90, description="Hány napra előre keresünk")
     currency: str = "EUR"
     max_price: Optional[float] = None
-    trip_mode: str = Field(default="daytrip", description="'daytrip' (egynapos) vagy 'multiday' (többnapos)")
+    trip_mode: Literal["daytrip", "multiday"] = Field(default="daytrip", description="'daytrip' (egynapos) vagy 'multiday' (többnapos)")
     min_nights: int = Field(default=2, ge=1, le=30, description="Többnapos: legkevesebb éjszaka")
     max_nights: int = Field(default=4, ge=1, le=30, description="Többnapos: legtöbb éjszaka")
+
+    @model_validator(mode="after")
+    def _check_night_range(self) -> "SearchConfig":
+        if self.min_nights > self.max_nights:
+            raise ValueError(
+                f"min_nights ({self.min_nights}) nem lehet nagyobb, mint max_nights ({self.max_nights})"
+            )
+        return self

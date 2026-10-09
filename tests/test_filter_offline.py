@@ -218,3 +218,64 @@ def test_ryanair_http_errors_raise():
         scraper.search_flights("BUD", "BGY", D1)
     with pytest.raises(requests.HTTPError):
         scraper.get_cheapest_per_day("BUD", "BGY", D1, D2)
+
+
+class FakeRouteScraper(BaseScraper):
+    """Kétfázisú scraper: minden nap van járat mindkét irányban, reggel és este is."""
+
+    def __init__(self):
+        super().__init__(airline=Airline.OTHER, source_name="fake-route")
+
+    def get_destinations(self, origin):
+        return ["BGY"]
+
+    def get_cheapest_per_day(self, origin, destination, date_from, date_to):
+        days = (date_to - date_from).days
+        return {(date_from + timedelta(days=i)).isoformat(): 10.0 for i in range(days + 1)}
+
+    def search_flights(self, origin, destination, flight_date, departure_time_from=None, departure_time_to=None):
+        hour = int(departure_time_from[:2]) if departure_time_from != "00:00" else 6
+        return [Flight(
+            airline=Airline.OTHER, origin=origin, destination=destination,
+            departure_time=datetime.combine(flight_date, datetime.min.time()).replace(hour=hour),
+            price=10.0, source="fake-route",
+        )]
+
+
+def test_two_phase_daytrip_and_multiday_share_one_path():
+    day = FlightFilter(SearchConfig(), [FakeRouteScraper()]).find_trips(["BGY"], [D1, D2])
+    assert [(t.trip_date, t.return_date) for t in day] == [(D1, D1), (D2, D2)]
+
+    config = SearchConfig(trip_mode="multiday", min_nights=2, max_nights=3)
+    multi = FlightFilter(config, [FakeRouteScraper()]).find_trips(["BGY"], [D1])
+    assert [(t.trip_date, t.nights) for t in multi] == [(D1, 2), (D1, 3)]
+    assert all(t.inbound.departure_time.date() == t.return_date for t in multi)
+
+
+def test_search_config_validation():
+    import pytest
+    from pydantic import ValidationError
+
+    with pytest.raises(ValidationError):
+        SearchConfig(trip_mode="multi")
+    with pytest.raises(ValidationError):
+        SearchConfig(min_nights=5, max_nights=2)
+
+
+def test_prepend_keeps_newest_runs(tmp_path):
+    from main import prepend_to_file, format_results
+
+    log = tmp_path / "result.log"
+    for i in range(4):
+        text = format_results([], SearchConfig(origin=f"AA{i}"), duration_sec=1)
+        prepend_to_file(str(log), text, max_runs=3)
+
+    content = log.read_text(encoding="utf-8")
+    assert content.count("Flight Finder |") == 3
+    # Legújabb felül, a legrégebbi (AA0) kiesett
+    assert content.index("AA3") < content.index("AA2") < content.index("AA1")
+    assert "AA0" not in content
+    assert not (tmp_path / "result.log.tmp").exists()
+
+    prepend_to_file(str(log), format_results([], SearchConfig(origin="AA4"), 1), max_runs=None)
+    assert log.read_text(encoding="utf-8").count("Flight Finder |") == 4

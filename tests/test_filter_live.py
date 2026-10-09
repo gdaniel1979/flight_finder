@@ -49,7 +49,7 @@ def main():
     print(f"  Dátumok:       {test_dates[0]} – {test_dates[-1]}")
     print("=" * 70)
 
-    trips = flight_filter.find_day_trips(
+    trips = flight_filter.find_trips(
         destinations=test_destinations,
         dates=test_dates,
     )

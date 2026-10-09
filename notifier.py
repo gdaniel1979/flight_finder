@@ -16,7 +16,6 @@ Használat:
     notifier.send_day_trips(trips)
 """
 
-import json
 import logging
 from collections import defaultdict
 from datetime import datetime
@@ -181,7 +180,6 @@ class EmailNotifier:
     # ── Email tartalom ──
 
     def _build_subject(self, trips: List[DayTrip]) -> str:
-        today = datetime.now().strftime("%Y-%m-%d")
         cheapest = min(
             (t for t in trips if t.total_price is not None),
             key=lambda t: t.total_price,

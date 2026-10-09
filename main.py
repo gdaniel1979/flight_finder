@@ -9,19 +9,17 @@ Futtatás:
 """
 
 import argparse
-import csv
-import json
 import logging
 import os
+import re
 import sys
-import tempfile
-import shutil
 from logging.handlers import RotatingFileHandler
-from datetime import date, datetime, timedelta
+from datetime import date, datetime
 from pathlib import Path
 from typing import List, Optional
 
 import yaml
+from pydantic import ValidationError
 
 from models import SearchConfig, DayTrip
 from scrapers.ryanair_scraper import RyanairScraper
@@ -76,16 +74,31 @@ def setup_logging(config: dict) -> str:
     return log_file
 
 
-def prepend_to_file(filepath: str, content: str) -> None:
-    """Tartalom beszúrása a fájl elejére (prepend)."""
+# Egy futás blokkjának eleje az eredmény-logban (lásd format_results)
+RUN_HEADER_RE = re.compile(r"^─{75}\nFlight Finder \|", re.MULTILINE)
+
+
+def prepend_to_file(filepath: str, content: str, max_runs: Optional[int] = None) -> None:
+    """
+    Tartalom beszúrása a fájl elejére (prepend). Ha max_runs meg van adva, csak a
+    legutóbbi ennyi futás marad meg. Atomikus: ideiglenes fájlba ír, majd cserél.
+    """
     if os.path.exists(filepath):
         with open(filepath, "r", encoding="utf-8") as f:
             old_content = f.read()
     else:
         old_content = ""
 
-    with open(filepath, "w", encoding="utf-8") as f:
-        f.write(content + old_content)
+    new_content = content + old_content
+    if max_runs:
+        run_starts = [m.start() for m in RUN_HEADER_RE.finditer(new_content)]
+        if len(run_starts) > max_runs:
+            new_content = new_content[:run_starts[max_runs]]
+
+    tmp_path = f"{filepath}.tmp"
+    with open(tmp_path, "w", encoding="utf-8") as f:
+        f.write(new_content)
+    os.replace(tmp_path, filepath)
 
 
 # ── Config ──
@@ -101,6 +114,17 @@ def load_config(config_path: str) -> dict:
 
 def build_search_config(config: dict) -> SearchConfig:
     search = config.get("search", {})
+    try:
+        return _search_config_from(search)
+    except ValidationError as e:
+        print("HIBA: Érvénytelen keresési beállítás a konfigurációban:")
+        for err in e.errors():
+            field = ".".join(["search"] + [str(part) for part in err["loc"]])
+            print(f"  {field}: {err['msg']}")
+        sys.exit(1)
+
+
+def _search_config_from(search: dict) -> SearchConfig:
     return SearchConfig(
         origin=search.get("origin", "BUD"),
         morning_before=search.get("morning_before", 9),
@@ -161,77 +185,6 @@ def resolve_dates(args, search_days: int) -> Optional[List[date]]:
 
 
 # ── Output ──
-
-def save_results_csv(trips: List[DayTrip], output_dir: str = "output") -> str:
-    os.makedirs(output_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(output_dir, f"day_trips_{timestamp}.csv")
-
-    with open(filename, "w", newline="", encoding="utf-8") as f:
-        writer = csv.writer(f)
-        writer.writerow([
-            "Dátum", "Célállomás", "Célváros",
-            "Oda járatszám", "Oda indulás", "Oda érkezés",
-            "Vissza járatszám", "Vissza indulás", "Vissza érkezés",
-            "Oda ár", "Vissza ár", "Összár", "Pénznem",
-            "Légitársaság", "Forrás",
-        ])
-        for trip in trips:
-            o = trip.outbound
-            i = trip.inbound
-            writer.writerow([
-                trip.trip_date.isoformat(),
-                o.destination,
-                o.destination_city or "?",
-                o.flight_number or "?",
-                o.departure_time.strftime("%H:%M"),
-                o.arrival_time.strftime("%H:%M") if o.arrival_time else "?",
-                i.flight_number or "?",
-                i.departure_time.strftime("%H:%M"),
-                i.arrival_time.strftime("%H:%M") if i.arrival_time else "?",
-                f"{o.price:.2f}" if o.price else "N/A",
-                f"{i.price:.2f}" if i.price else "N/A",
-                f"{trip.total_price:.2f}" if trip.total_price else "N/A",
-                o.currency,
-                o.airline.value,
-                o.source,
-            ])
-    return filename
-
-
-def save_results_json(trips: List[DayTrip], output_dir: str = "output") -> str:
-    os.makedirs(output_dir, exist_ok=True)
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-    filename = os.path.join(output_dir, f"day_trips_{timestamp}.json")
-
-    data = []
-    for trip in trips:
-        data.append({
-            "date": trip.trip_date.isoformat(),
-            "destination": trip.outbound.destination,
-            "destination_city": trip.outbound.destination_city,
-            "outbound": {
-                "flight_number": trip.outbound.flight_number,
-                "departure": trip.outbound.departure_time.isoformat(),
-                "arrival": trip.outbound.arrival_time.isoformat() if trip.outbound.arrival_time else None,
-                "price": trip.outbound.price,
-            },
-            "inbound": {
-                "flight_number": trip.inbound.flight_number,
-                "departure": trip.inbound.departure_time.isoformat(),
-                "arrival": trip.inbound.arrival_time.isoformat() if trip.inbound.arrival_time else None,
-                "price": trip.inbound.price,
-            },
-            "total_price": trip.total_price,
-            "currency": trip.outbound.currency,
-            "airline": trip.outbound.airline.value,
-            "source": trip.outbound.source,
-        })
-
-    with open(filename, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    return filename
-
 
 def format_results(
     trips: List[DayTrip],
@@ -367,14 +320,8 @@ def main():
     print(result_text)
 
     # Log fájlba prepend (új felülre)
-    prepend_to_file(log_file, result_text)
-
-    # CSV + JSON -- Nincs szükség egyelőre, hogy létrehozza az outputot.
-    # if trips:
-    #     csv_file = save_results_csv(trips)
-    #     json_file = save_results_json(trips)
-    #     print(f"  CSV: {csv_file}")
-    #     print(f"  JSON: {json_file}")
+    max_runs = raw_config.get("logging", {}).get("max_result_runs", 365)
+    prepend_to_file(log_file, result_text, max_runs=max_runs)
 
     # Email – minden lefutáskor kimegy: találat esetén a járatpárokkal,
     # üres eredménynél rövid "nincs találat" visszaigazolással.

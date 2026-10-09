@@ -58,6 +58,7 @@ email:
 logging:
   level: "INFO"               # DEBUG, INFO, WARNING, ERROR
   log_file: "logs/flight_finder.log"                 # Eredmények (legújabb futás felül)
+  max_result_runs: 365        # Ennyi legutóbbi futás marad az eredmény-logban (null = mind)
   debug_log_file: "logs/flight_finder_debug.log"     # Diagnosztika: kérések, hibák (forgatva)
   max_log_size_mb: 10         # A diagnosztikai log forgatási mérete
   backup_count: 5             # Ennyi régi diagnosztikai logot tart meg

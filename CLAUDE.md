@@ -32,9 +32,11 @@ python tests/test_models.py                # Run model tests directly
 
 **Two-phase path** (`FlightFilter._find_trips_two_phase`) — fallback for scrapers without round-trip search; ~1 hour for all Ryanair routes, which is why Ryanair no longer uses it:
 
-**Phase 1 – Pre-filter** (`FlightFilter._prefilter_candidates`): calls `get_cheapest_per_day()` once per route direction to get a set of dates that have any flights at all. Only date/destination pairs that have flights in *both* directions survive.
+**Phase 1 – Pre-filter** (`FlightFilter._prefilter_candidates`): calls `get_cheapest_per_day()` once per route direction to get a set of dates that have any flights at all. Yields `(dest, D1, D2)` candidates where both directions have flights.
 
-**Phase 2 – Detailed search** (`FlightFilter._search_destination_date`): for each surviving (destination, date) pair, fetches morning outbound flights and evening return flights, then builds all valid `DayTrip` pairs by Cartesian product, filtering by `max_price`.
+**Phase 2 – Detailed search** (`FlightFilter._search_destination_dates`): for each candidate, fetches morning outbound flights on D1 and evening return flights on D2, then builds all valid `DayTrip` pairs by Cartesian product, filtering by `max_price`.
+
+Both paths share one code path for day trips and multi-day trips: a day trip is simply 0 nights (`FlightFilter._night_range`).
 
 ### Modules
 
@@ -65,7 +67,7 @@ All three raise on HTTP errors (404 counts as empty) so `FlightFilter` can count
 
 ### Log files
 
-Results are **prepended** to `logs/flight_finder.log` (newest run always at the top). This is intentional — `main.py:prepend_to_file` reads the existing content and writes new content before it.
+Results are **prepended** to `logs/flight_finder.log` (newest run always at the top). This is intentional — `main.py:prepend_to_file` reads the existing content and writes new content before it (atomically, via a temp file), keeping only the newest `logging.max_result_runs` runs (default 365).
 
 Diagnostics (per-request info lines, failed requests, email errors) go to a separate size-rotated file, `logging.debug_log_file` (default `logs/flight_finder_debug.log`; `max_log_size_mb` / `backup_count` apply to it). WARNING+ also goes to stderr, which cron appends to `logs/cron_errors.log`.
 
@@ -74,7 +76,7 @@ Diagnostics (per-request info lines, failed requests, email errors) go to a sepa
 `config.yaml` is **gitignored** — bootstrap a local copy from `config.yaml.example`. All search parameters live there:
 - `search.origin` — departure airport IATA code (default: `BUD`)
 - `search.morning_before` / `search.evening_after` — time window for outbound/return flights
-- `search.trip_mode` — `daytrip` (same-day out-and-back, the default) or `multiday` (morning outbound on day 1, evening return `min_nights`–`max_nights` later). `FlightFilter.find_trips` dispatches on this; `multiday` builds `(dest, D1, D2)` candidates where `D2 = D1 + n` nights and the return leg extends the prefilter window by `max_nights`. `DayTrip.return_date`/`.nights` carry the span (nights `0` = day trip).
+- `search.trip_mode` — `daytrip` (same-day out-and-back, the default) or `multiday` (morning outbound on day 1, evening return `min_nights`–`max_nights` later). `FlightFilter._night_range` turns this into the nights to search (`daytrip` = `[0]`); every candidate is an `(D1, D2 = D1 + n)` pair. An unknown value is rejected at startup. `DayTrip.return_date`/`.nights` carry the span (nights `0` = day trip).
 - `search.min_nights` / `search.max_nights` — night range, `multiday` only
 - `search.destinations` — explicit list; empty means fetch all routes from the API
 - `search.exclude_destinations` — always-excluded IATA codes
@@ -106,7 +108,7 @@ Do not re-attempt this with free tooling — it is a known dead end.
 - `pyyaml`, `requests`, `pydantic` — required
 - `brevo` / `sib-api-v3-sdk` — optional; `notifier.py` falls back to direct HTTP without them
 
-A `requirements.txt` is checked in (frozen from the prod host); install with `pip install -r requirements.txt`.
+`requirements.txt` lists only the three required packages, pinned to the versions on the prod host; install with `pip install -r requirements.txt`.
 
 ## Deployment
 
