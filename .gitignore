@@ -1,5 +1,7 @@
 # Titkos config — soha ne menjen GitHubra
 config.yaml
+config.yaml.bak
+config.yaml.tmp
 
 # Helyi munkamappa (" !munka", szóközzel kezdődik) — config-mentést és API kulcsot tartalmaz
 /[ ]!munka/

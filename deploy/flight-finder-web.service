@@ -1,0 +1,24 @@
+# Flight Finder beállító webapp – systemd unit
+#
+# Telepítés:
+#   sudo cp deploy/flight-finder-web.service /etc/systemd/system/
+#   sudo systemctl daemon-reload
+#   sudo systemctl enable --now flight-finder-web
+#
+# A --server.address 0.0.0.0 a nyilvános IP-n is elérhetővé teszi (http://<szerver>:8503).
+# Az appban nincs belépés: aki eléri a portot, az szerkesztheti a beállításokat.
+# Ha csak SSH-alagúton át szeretnéd elérni, írd át 127.0.0.1-re.
+
+[Unit]
+Description=Flight Finder Settings Streamlit App
+After=network.target
+
+[Service]
+User=gdaniel1979
+WorkingDirectory=/home/gdaniel1979/my_projects/flight_finder_ryanair
+ExecStart=/home/gdaniel1979/.local/bin/streamlit run webapp.py --server.port 8503 --server.address 0.0.0.0 --server.headless true
+Restart=always
+RestartSec=3
+
+[Install]
+WantedBy=multi-user.target

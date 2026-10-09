@@ -12,10 +12,23 @@ python3.9 main.py --destinations BCN,BGY,STN   # Search specific destinations on
 python3.9 main.py --config custom_config.yaml  # Use a different config file
 ```
 
+## Settings web app
+
+```bash
+streamlit run webapp.py --server.port 8503 --server.address 127.0.0.1   # local only
+```
+
+`webapp.py` is a Streamlit form over every key in `config.yaml` (tabs: Keresés, Légitársaságok, Email, Rendszer). `config_store.py` holds the logic it shares with tests: load, `validate()` (reuses `SearchConfig` plus IATA/email/airline checks), `describe_changes()` and an atomic `save_config()` that first copies the old file to `config.yaml.bak`.
+
+- **There is no login** (the user's explicit choice on 2026-10-09: single user). Anyone who can reach the port can edit the settings, so two guards stay in place: the Brevo API key is never rendered (the field is always empty; leaving it empty keeps the stored key), and `validate()` only accepts log file paths that are relative and inside the project.
+- **Saving rewrites `config.yaml` with PyYAML**, so hand-written comments in it are lost (the key descriptions stay in `config.yaml.example`). Keys the form does not know are preserved.
+- Changes apply to the next run; nothing is restarted. The app never triggers a search.
+- `deploy/flight-finder-web.service` is the systemd unit (port 8503); installing it needs sudo and is done by hand, like the cron job.
+
 ## Running tests
 
 ```bash
-python -m pytest tests/test_models.py tests/test_filter_offline.py tests/test_wizzair_offline.py -v   # Unit tests (no network calls)
+python -m pytest tests/test_models.py tests/test_filter_offline.py tests/test_wizzair_offline.py tests/test_webapp_offline.py -v   # Unit tests (no network calls)
 python -m pytest tests/ -v                 # All tests (live tests hit real APIs)
 python tests/test_models.py                # Run model tests directly
 ```
@@ -23,6 +36,7 @@ python tests/test_models.py                # Run model tests directly
 `tests/test_models.py` — offline unit tests for models and scraper instantiation.  
 `tests/test_filter_offline.py` — offline tests for the fast search path (fake scraper, fake HTTP session).  
 `tests/test_wizzair_offline.py` — offline tests for the Wizz Air scraper (fake Google Flights rows).  
+`tests/test_webapp_offline.py` — offline tests for `config_store.py` and the Streamlit app (driven with `streamlit.testing.v1.AppTest`).  
 `tests/test_ryanair_live.py` and `tests/test_filter_live.py` — make real network requests to Ryanair APIs.
 
 ## Architecture
@@ -50,6 +64,7 @@ Both paths share one code path for day trips and multi-day trips: a day trip is 
 | `scrapers/ryanair_scraper.py` | `RyanairScraper` — direct farfnd API calls |
 | `scrapers/wizzair_scraper.py` | `WizzairScraper` — Wizz Air via Google Flights (`fast-flights`) |
 | `notifier.py` | `EmailNotifier` — Brevo email sending with three-strategy fallback |
+| `webapp.py` / `config_store.py` | Streamlit settings app and its config load/validate/save logic |
 
 ### RyanairScraper endpoints
 
@@ -84,7 +99,8 @@ Diagnostics (per-request info lines, failed requests, email errors) go to a sepa
 - `search.exclude_destinations` — always-excluded IATA codes
 - `rate_limit.request_delay` / `rate_limit.max_retries` — passed to `RyanairScraper` (delay between flight searches; retries on 429/5xx)
 - `airlines.ryanair.enabled` — the easyJet stub exists but is not implemented
-- `airlines.wizzair.enabled` / `.destinations` / `.request_delay` — Wizz Air via Google Flights, only for the listed IATA codes (see WizzAir note below). If `search.destinations` is set, a Wizz destination must be in that list too.
+- `airlines.wizzair.enabled` / `.destinations` / `.request_delay` — Wizz Air via Google Flights, only for the listed IATA codes (see WizzAir note below).
+- `airlines.wizzair.max_price` — Wizz-only round-trip price limit; `null` falls back to `search.max_price`. Implemented as `BaseScraper.max_price`, which the fast path prefers over the global limit. If `search.destinations` is set, a Wizz destination must be in that list too.
 - `email.enabled` — set to `true` to send results via Brevo; requires `brevo_api_key`
 - `email.recipient_emails` — **list** of recipient addresses (multi-recipient supported)
 
@@ -111,6 +127,7 @@ Instead `scrapers/wizzair_scraper.py` (`WizzairScraper`) reads Wizz Air flights 
 
 - Python 3.9+
 - `pyyaml`, `requests`, `pydantic` — required
+- `streamlit` — only needed for `webapp.py`
 - `fast-flights` (pulls in `primp`, `selectolax`, `protobuf`) — only needed when `airlines.wizzair.enabled` is true; imported lazily
 - `brevo` / `sib-api-v3-sdk` — optional; `notifier.py` falls back to direct HTTP without them
 
