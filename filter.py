@@ -82,6 +82,7 @@ class FlightFilter:
         for idx, (d_out, d_back) in enumerate(date_pairs, 1):
             label = self._date_label(d_out, d_back)
             for scraper in scrapers:
+                max_price = scraper.max_price if scraper.max_price is not None else self.config.max_price
                 self.total_requests += 1
                 try:
                     trips = scraper.search_round_trips(
@@ -90,7 +91,7 @@ class FlightFilter:
                         back_date=d_back,
                         before_hour=self.config.morning_before,
                         after_hour=self.config.evening_after,
-                        max_price=self.config.max_price,
+                        max_price=max_price,
                         destinations=destinations or None,
                     )
                 except Exception as e:
@@ -104,7 +105,7 @@ class FlightFilter:
                     self.total_requests += sub_total - 1
                     self.failed_requests += sub_failed
 
-                trips = [t for t in trips if self._is_wanted(t, allowed)]
+                trips = [t for t in trips if self._is_wanted(t, allowed, max_price)]
                 all_trips.extend(trips)
                 if trips:
                     print(f"  [{idx}/{total}] {label}: {len(trips)} pár", flush=True)
@@ -115,11 +116,12 @@ class FlightFilter:
         self.failed_requests += 1
         logger.error(f"Sikertelen lekérdezés – {what}: {error}")
 
-    def _is_wanted(self, trip: DayTrip, allowed: Optional[Set[str]]) -> bool:
+    @staticmethod
+    def _is_wanted(trip: DayTrip, allowed: Optional[Set[str]], max_price: Optional[float]) -> bool:
         if allowed is not None and trip.outbound.destination not in allowed:
             return False
-        if self.config.max_price is not None and trip.total_price is not None:
-            if trip.total_price > self.config.max_price:
+        if max_price is not None and trip.total_price is not None:
+            if trip.total_price > max_price:
                 return False
         return True
 
@@ -286,7 +288,7 @@ class FlightFilter:
                 trip_date=d_out,
                 return_date=d_back,
             )
-            if self._is_wanted(trip, allowed=None):
+            if self._is_wanted(trip, allowed=None, max_price=self.config.max_price):
                 trips.append(trip)
 
         return trips

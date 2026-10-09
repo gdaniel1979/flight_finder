@@ -161,6 +161,7 @@ def build_scrapers(config: dict, currency: str) -> List[BaseScraper]:
                 destinations=wizzair_destinations,
                 currency=wizzair_config.get("currency", currency),
                 request_delay=wizzair_config.get("request_delay", 3),
+                max_price=wizzair_config.get("max_price"),
             ))
         else:
             print("FIGYELEM: airlines.wizzair engedélyezve, de nincs megadva destinations – kihagyva")

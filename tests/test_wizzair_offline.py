@@ -126,3 +126,19 @@ def test_block_stops_all_further_requests():
     assert f.total_requests == 3 and f.failed_requests == 3
     with pytest.raises(GoogleFlightsBlocked):
         scraper.search_flights("BUD", "FCO", D1)
+
+
+def test_scraper_max_price_overrides_global_limit():
+    # A FCO pár 75 EUR: a globális 50-es limit kiszűrné, a Wizz saját 80-as limitje átengedi
+    f = FlightFilter(SearchConfig(max_price=50), [make_scraper(["FCO"])])
+    assert f.find_trips(destinations=["FCO"], dates=[D1]) == []
+
+    scraper = make_scraper(["FCO"])
+    scraper.max_price = 80
+    f = FlightFilter(SearchConfig(max_price=50), [scraper])
+    assert [t.total_price for t in f.find_trips(destinations=["FCO"], dates=[D1])] == [75.0]
+
+    scraper = make_scraper(["FCO"])
+    scraper.max_price = 60
+    f = FlightFilter(SearchConfig(max_price=None), [scraper])
+    assert f.find_trips(destinations=["FCO"], dates=[D1]) == []

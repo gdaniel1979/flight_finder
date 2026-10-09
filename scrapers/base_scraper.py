@@ -48,6 +48,9 @@ class BaseScraper(ABC):
     # True, ha a scraper felülírja a search_round_trips-t (gyors, napi egy hívásos keresés).
     supports_round_trip_search: bool = False
 
+    # Légitársaságonkénti árlimit a gyors keresésben; None = a globális search.max_price érvényes.
+    max_price: Optional[float] = None
+
     def search_round_trips(
         self,
         origin: str,

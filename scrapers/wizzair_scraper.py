@@ -64,6 +64,7 @@ class WizzairScraper(BaseScraper):
         destinations: List[str],
         currency: str = "EUR",
         request_delay: float = REQUEST_DELAY,
+        max_price: Optional[float] = None,
     ):
         super().__init__(
             airline=Airline.WIZZAIR,
@@ -72,6 +73,7 @@ class WizzairScraper(BaseScraper):
         )
         self._destinations = [d.strip().upper() for d in destinations]
         self._request_delay = request_delay
+        self.max_price = max_price
         self._last_request_time = 0.0
         self._blocked_reason: Optional[str] = None
         self._cache: Dict[Tuple[str, str, date], List[Flight]] = {}

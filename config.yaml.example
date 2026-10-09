@@ -41,6 +41,7 @@ airlines:
     currency: "EUR"
     destinations: ["FCO", "NAP"]
     request_delay: 3          # Várakozás két Google kérés között (másodperc)
+    max_price: null        # Külön Wizz árlimit oda-vissza (null = a search.max_price érvényes)
 
   easyjet:
     enabled: false             # Még nincs kész
