@@ -1,6 +1,9 @@
 # Titkos config — soha ne menjen GitHubra
 config.yaml
 
+# Helyi munkamappa (" !munka", szóközzel kezdődik) — config-mentést és API kulcsot tartalmaz
+/[ ]!munka/
+
 # Python cache
 __pycache__/
 *.pyc
