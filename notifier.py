@@ -71,20 +71,24 @@ class EmailNotifier:
         else:
             self.logger.info("Email: közvetlen HTTP API")
 
-    def send_day_trips(self, trips: List[DayTrip]) -> bool:
+    def send_day_trips(self, trips: List[DayTrip], warning: Optional[str] = None) -> bool:
         """
         Járatpárok küldése emailben.
+
+        Args:
+            warning: ha a keresés részben/egészben sikertelen volt, ez a szöveg
+                     kiemelve megjelenik a levélben
 
         Returns:
             True ha sikeres, False ha nem
         """
         if not trips:
-            subject = self._build_empty_subject()
-            html = self._build_empty_html()
+            subject = self._build_empty_subject(warning)
+            html = self._build_empty_html(warning)
             return self._send_email(subject, html)
 
         subject = self._build_subject(trips)
-        html = self._build_html(trips)
+        html = self._build_html(trips, warning)
 
         return self._send_email(subject, html)
 
@@ -191,12 +195,34 @@ class EmailNotifier:
             )
         return f"Ryanair Finder - {len(trips)} járatpár találva"
 
-    def _build_empty_subject(self) -> str:
+    def _build_empty_subject(self, warning: Optional[str] = None) -> str:
         today = datetime.now().strftime("%Y-%m-%d")
+        if warning:
+            return f"Ryanair Finder - hibás futás, nincs találat ({today})"
         return f"Ryanair Finder - nincs találat ({today})"
 
-    def _build_empty_html(self) -> str:
+    @staticmethod
+    def _warning_html(warning: Optional[str]) -> str:
+        if not warning:
+            return ""
+        return (
+            '<p style="padding:10px;background:#fff4e5;border-left:4px solid #e67e22;'
+            f'color:#8a4b00;font-size:14px;">Figyelem: {warning}</p>'
+        )
+
+    def _build_empty_html(self, warning: Optional[str] = None) -> str:
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
+        if warning:
+            return f"""
+        <html>
+        <body style="font-family:Arial,sans-serif;color:#333;max-width:800px;margin:0 auto;padding:16px;">
+            <h2 style="color:#1a73e8;">Napi járatpárok</h2>
+            <p style="color:#666;">Generálva: {now}</p>
+            {self._warning_html(warning)}
+            <p style="font-size:15px;">Nem találtunk a feltételeknek megfelelő járatpárt, de a keresés nem futott le hibátlanul.</p>
+        </body>
+        </html>
+        """
         return f"""
         <html>
         <body style="font-family:Arial,sans-serif;color:#333;max-width:800px;margin:0 auto;padding:16px;">
@@ -207,7 +233,7 @@ class EmailNotifier:
         </html>
         """
 
-    def _build_html(self, trips: List[DayTrip]) -> str:
+    def _build_html(self, trips: List[DayTrip], warning: Optional[str] = None) -> str:
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
         # Csoportosítás célállomás szerint. Kulcs: (város, reptér_kód)
@@ -293,6 +319,7 @@ class EmailNotifier:
         <body style="font-family:Arial,sans-serif;color:#333;max-width:800px;margin:0 auto;padding:16px;">
             <h2 style="color:#1a73e8;">Napi járatpárok</h2>
             <p style="color:#666;">Generálva: {now} | Találatok: {len(trips)} | Célállomások: {len(sorted_keys)}</p>
+            {self._warning_html(warning)}
 
             {sections}
         </body>

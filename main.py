@@ -216,7 +216,12 @@ def save_results_json(trips: List[DayTrip], output_dir: str = "output") -> str:
     return filename
 
 
-def format_results(trips: List[DayTrip], config: SearchConfig, duration_sec: float) -> str:
+def format_results(
+    trips: List[DayTrip],
+    config: SearchConfig,
+    duration_sec: float,
+    warning: Optional[str] = None,
+) -> str:
     """Formázott eredmény string – logba és konzolra is megy."""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
     lines = []
@@ -233,6 +238,8 @@ def format_results(trips: List[DayTrip], config: SearchConfig, duration_sec: flo
             f"vissza >{config.evening_after}:00 | {config.currency}"
         )
     lines.append(f"{'─'*75}")
+    if warning:
+        lines.append(f"  FIGYELEM: {warning}")
 
     if not trips:
         lines.append("  Nincs találat.")
@@ -329,7 +336,15 @@ def main():
     duration = (datetime.now() - start_time).total_seconds()
 
     # Eredmény formázás
-    result_text = format_results(trips, search_config, duration)
+    # Sikertelen lekérdezések: ne tűnjön hibátlannak egy hiányos futás
+    warning = None
+    if flight_filter.failed_requests:
+        warning = (
+            f"{flight_filter.failed_requests}/{flight_filter.total_requests} lekérdezés "
+            f"sikertelen – az eredmény hiányos lehet."
+        )
+
+    result_text = format_results(trips, search_config, duration, warning)
 
     # Konzolra
     print(result_text)
@@ -365,7 +380,7 @@ def main():
                 sender_name=email_config.get("sender_name", "Flight Finder"),
                 recipient_emails=recipient_emails,
             )
-            success = notifier.send_day_trips(trips)
+            success = notifier.send_day_trips(trips, warning=warning)
             print(f"  Email: {'OK' if success else 'HIBA'} → {', '.join(recipient_emails)}")
         else:
             print("  Email: hiányos konfiguráció")

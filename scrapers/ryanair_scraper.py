@@ -19,7 +19,7 @@ import sys
 import os
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
-from models import Flight, Airline
+from models import Flight, DayTrip, Airline
 from scrapers.base_scraper import BaseScraper
 
 logger = logging.getLogger(__name__)
@@ -477,7 +477,114 @@ class RyanairScraper(BaseScraper):
             return None
 
     # ──────────────────────────────────────────────
-    # 3. Fares API – egyszerűbb ár-keresés (kiegészítő)
+    # 3. Oda-vissza keresés – egy kérés / nap, minden célállomásra
+    # ──────────────────────────────────────────────
+
+    supports_round_trip_search = True
+
+    def search_round_trips(
+        self,
+        origin: str,
+        out_date: date,
+        back_date: date,
+        before_hour: int = 9,
+        after_hour: int = 18,
+        max_price: Optional[float] = None,
+    ) -> List[DayTrip]:
+        """
+        Járatpárok a farfnd roundTripFares végpontról: célállomásonként a
+        legolcsóbb reggeli oda + esti vissza pár az adott napokra.
+        HTTP hibánál requests.RequestException-t dob.
+        """
+        if before_hour <= 0:
+            return []
+
+        self._rate_limit(slow=True)
+        nights = (back_date - out_date).days
+        params = {
+            "departureAirportIataCode": origin,
+            "outboundDepartureDateFrom": out_date.isoformat(),
+            "outboundDepartureDateTo": out_date.isoformat(),
+            "inboundDepartureDateFrom": back_date.isoformat(),
+            "inboundDepartureDateTo": back_date.isoformat(),
+            "durationFrom": nights,
+            "durationTo": nights,
+            "outboundDepartureTimeFrom": "00:00",
+            "outboundDepartureTimeTo": f"{before_hour - 1:02d}:59",
+            "inboundDepartureTimeFrom": f"{after_hour:02d}:00",
+            "inboundDepartureTimeTo": "23:59",
+            "adultPaxCount": 1,
+            "market": "en-gb",
+            "searchMode": "ALL",
+            "currency": self.currency,
+        }
+        if max_price is not None:
+            params["priceValueTo"] = max_price
+
+        resp = self._session.get(
+            f"{RYANAIR_FARES_API}/roundTripFares", params=params, timeout=15
+        )
+        resp.raise_for_status()
+        data = resp.json()
+
+        if data.get("nextPage") is not None:
+            self.logger.warning(
+                f"roundTripFares {out_date}→{back_date}: lapozott válasz, csak az első oldal feldolgozva"
+            )
+
+        trips = []
+        for fare_data in data.get("fares", []):
+            try:
+                outbound = self._parse_farfnd_leg(fare_data["outbound"])
+                inbound = self._parse_farfnd_leg(fare_data["inbound"])
+            except Exception as e:
+                self.logger.warning(f"roundTripFares parse hiba: {e}")
+                continue
+
+            if not outbound.is_morning_departure(before_hour):
+                continue
+            if not inbound.is_evening_departure(after_hour):
+                continue
+
+            trips.append(DayTrip(
+                outbound=outbound,
+                inbound=inbound,
+                trip_date=out_date,
+                return_date=back_date,
+            ))
+
+        self.logger.info(f"roundTripFares: {origin} {out_date}→{back_date}: {len(trips)} pár")
+        return trips
+
+    def _parse_farfnd_leg(self, leg: Dict[str, Any]) -> Flight:
+        """Egy farfnd járat-szakasz (outbound/inbound) → Flight."""
+        dep_airport = leg.get("departureAirport") or {}
+        arr_airport = leg.get("arrivalAirport") or {}
+        price_data = leg.get("price") or {}
+        arr_str = leg.get("arrivalDate")
+
+        price = price_data.get("value")
+
+        fn = leg.get("flightNumber") or None
+        if fn and not any(fn.startswith(p) for p in ("FR", "RK")):
+            fn = f"FR{fn}"
+
+        return Flight(
+            airline=Airline.RYANAIR,
+            flight_number=fn,
+            origin=dep_airport["iataCode"],
+            destination=arr_airport["iataCode"],
+            origin_city=(dep_airport.get("city") or {}).get("name") or dep_airport.get("name"),
+            destination_city=(arr_airport.get("city") or {}).get("name") or arr_airport.get("name"),
+            departure_time=datetime.fromisoformat(leg["departureDate"].replace("Z", "")),
+            arrival_time=datetime.fromisoformat(arr_str.replace("Z", "")) if arr_str else None,
+            price=float(price) if price else None,
+            currency=price_data.get("currencyCode", self.currency),
+            source="ryanair-farfnd",
+        )
+
+    # ──────────────────────────────────────────────
+    # 4. Fares API – egyszerűbb ár-keresés (kiegészítő)
     # ──────────────────────────────────────────────
 
     def get_cheapest_per_day(

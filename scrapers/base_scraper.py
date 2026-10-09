@@ -7,7 +7,7 @@ from abc import ABC, abstractmethod
 from datetime import date
 from typing import List, Optional, Dict
 
-from models import Flight, Airline
+from models import Flight, DayTrip, Airline
 
 logger = logging.getLogger(__name__)
 
@@ -44,6 +44,25 @@ class BaseScraper(ABC):
         A scraperek felülírhatják ha van ilyen API-juk.
         """
         return {}
+
+    # True, ha a scraper felülírja a search_round_trips-t (gyors, napi egy hívásos keresés).
+    supports_round_trip_search: bool = False
+
+    def search_round_trips(
+        self,
+        origin: str,
+        out_date: date,
+        back_date: date,
+        before_hour: int = 9,
+        after_hour: int = 18,
+        max_price: Optional[float] = None,
+    ) -> List[DayTrip]:
+        """
+        Az adott oda/vissza napra az ÖSSZES célállomás járatpárja egyetlen kéréssel
+        (reggeli oda, esti vissza). Hálózati hibánál kivételt dob, hogy a hívó
+        számolni tudja a sikertelen lekérdezéseket.
+        """
+        raise NotImplementedError
 
     def search_outbound_flights(
         self, origin: str, destination: str, flight_date: date, before_hour: int = 9

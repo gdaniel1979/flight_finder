@@ -15,17 +15,22 @@ python3.9 main.py --config custom_config.yaml  # Use a different config file
 ## Running tests
 
 ```bash
-python -m pytest tests/test_models.py -v   # Unit tests (no network calls)
+python -m pytest tests/test_models.py tests/test_filter_offline.py -v   # Unit tests (no network calls)
 python -m pytest tests/ -v                 # All tests (live tests hit real APIs)
 python tests/test_models.py                # Run model tests directly
 ```
 
 `tests/test_models.py` — offline unit tests for models and scraper instantiation.  
+`tests/test_filter_offline.py` — offline tests for the fast search path (fake scraper, fake HTTP session).  
 `tests/test_ryanair_live.py` and `tests/test_filter_live.py` — make real network requests to Ryanair APIs.
 
 ## Architecture
 
-The search runs in two phases orchestrated by `filter.py`:
+`FlightFilter.find_trips` (`filter.py`) picks a search path per scraper:
+
+**Fast path** (`FlightFilter._find_trips_fast`) — for scrapers with `supports_round_trip_search = True` (Ryanair). One `search_round_trips()` call per (outbound date, return date) pair returns the cheapest morning-out/evening-back pair for *every* destination at once (farfnd `roundTripFares`, `durationFrom = durationTo = nights`). A 30-day day-trip search is 30 requests (~25 s). Destination and `max_price` filtering happen client-side (`max_price` is also sent as `priceValueTo`). Failed requests are counted in `FlightFilter.failed_requests` / `total_requests`; `main.py` turns a non-zero count into a warning line in the log and the email so a blocked run doesn't look like "no results".
+
+**Two-phase path** (`FlightFilter._find_trips_two_phase`) — fallback for scrapers without round-trip search; ~1 hour for all Ryanair routes, which is why Ryanair no longer uses it:
 
 **Phase 1 – Pre-filter** (`FlightFilter._prefilter_candidates`): calls `get_cheapest_per_day()` once per route direction to get a set of dates that have any flights at all. Only date/destination pairs that have flights in *both* directions survive.
 
@@ -43,6 +48,8 @@ The search runs in two phases orchestrated by `filter.py`:
 | `notifier.py` | `EmailNotifier` — Brevo email sending with three-strategy fallback |
 
 ### RyanairScraper fallback chain
+
+Only used by the two-phase path (`search_flights`); the fast path calls `roundTripFares` directly.
 
 1. **flyan library** (`_search_via_flyan`) — preferred; requires `pip install flyan`
 2. **farfnd API** (`_search_via_farfnd`) — direct HTTP to `ryanair.com/api/farfnd/v4`; no session cookie needed
@@ -87,7 +94,7 @@ Do not re-attempt this with free tooling — it is a known dead end.
 
 1. Subclass `BaseScraper` in `scrapers/`.
 2. Implement `get_destinations(origin)` and `search_flights(origin, dest, date, time_from, time_to)`.
-3. Optionally override `get_cheapest_per_day` for the pre-filter phase to work (without it, that scraper contributes no candidates).
+3. Either set `supports_round_trip_search = True` and implement `search_round_trips` (fast path; must raise on network errors), or override `get_cheapest_per_day` for the two-phase pre-filter to work (without it, that scraper contributes no candidates).
 4. Enable it in `config.yaml` under `airlines` and instantiate it in `main.py:build_scrapers`.
 
 ## Dependencies

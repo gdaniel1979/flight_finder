@@ -23,13 +23,100 @@ class FlightFilter:
     def __init__(self, config: SearchConfig, scrapers: List[BaseScraper]):
         self.config = config
         self.scrapers = scrapers
+        # Gyors keresés lekérdezés-statisztikája (a hívó ebből látja, ha hiányos az eredmény)
+        self.total_requests = 0
+        self.failed_requests = 0
 
     def find_trips(
         self,
         destinations: List[str] = None,
         dates: List[date] = None,
     ) -> List[DayTrip]:
-        """Belépési pont: a trip_mode alapján egynapos vagy többnapos keresés."""
+        """
+        Belépési pont. A round-trip keresést támogató scraperek a gyors úton mennek
+        (egy kérés / nap), a többiek a kétfázisú (előszűrés + részletes) keresésen.
+        """
+        fast = [s for s in self.scrapers if s.supports_round_trip_search]
+        slow = [s for s in self.scrapers if not s.supports_round_trip_search]
+
+        trips: List[DayTrip] = []
+        if fast:
+            trips.extend(self._find_trips_fast(fast, destinations, dates))
+        if slow:
+            slow_filter = self if not fast else FlightFilter(self.config, slow)
+            trips.extend(slow_filter._find_trips_two_phase(destinations, dates))
+
+        trips.sort(key=lambda t: (
+            t.trip_date, t.return_date,
+            t.total_price if t.total_price is not None else float("inf"),
+        ))
+        return trips
+
+    def _find_trips_fast(
+        self,
+        scrapers: List[BaseScraper],
+        destinations: Optional[List[str]],
+        dates: Optional[List[date]],
+    ) -> List[DayTrip]:
+        """Gyors keresés: (oda nap, vissza nap) páronként egy kérés, minden célállomásra."""
+        if dates is None:
+            today = date.today()
+            dates = [today + timedelta(days=i) for i in range(1, self.config.search_days + 1)]
+
+        if self.config.trip_mode == "multiday":
+            night_range = range(self.config.min_nights, self.config.max_nights + 1)
+        else:
+            night_range = range(0, 1)
+
+        date_pairs = [
+            (d_out, d_out + timedelta(days=n)) for d_out in sorted(dates) for n in night_range
+        ]
+        # Üres lista = nincs szűrés (pl. ha a célállomás-lista lekérése nem sikerült)
+        allowed = set(destinations) if destinations else None
+
+        total = len(date_pairs)
+        print(f"Keresés (roundTripFares): {total} nap-kombináció...", flush=True)
+
+        all_trips: List[DayTrip] = []
+        for idx, (d_out, d_back) in enumerate(date_pairs, 1):
+            label = f"{d_out}" if d_back == d_out else f"{d_out}→{d_back}"
+            for scraper in scrapers:
+                self.total_requests += 1
+                try:
+                    trips = scraper.search_round_trips(
+                        origin=self.config.origin,
+                        out_date=d_out,
+                        back_date=d_back,
+                        before_hour=self.config.morning_before,
+                        after_hour=self.config.evening_after,
+                        max_price=self.config.max_price,
+                    )
+                except Exception as e:
+                    self.failed_requests += 1
+                    logger.error(f"Hiba {label} ({scraper.source_name}): {e}")
+                    continue
+
+                trips = [t for t in trips if self._is_wanted(t, allowed)]
+                all_trips.extend(trips)
+                if trips:
+                    print(f"  [{idx}/{total}] {label}: {len(trips)} pár", flush=True)
+
+        return all_trips
+
+    def _is_wanted(self, trip: DayTrip, allowed: Optional[Set[str]]) -> bool:
+        if allowed is not None and trip.outbound.destination not in allowed:
+            return False
+        if self.config.max_price is not None and trip.total_price is not None:
+            if trip.total_price > self.config.max_price:
+                return False
+        return True
+
+    def _find_trips_two_phase(
+        self,
+        destinations: List[str] = None,
+        dates: List[date] = None,
+    ) -> List[DayTrip]:
+        """Kétfázisú keresés a trip_mode alapján (round-trip keresés nélküli scraperekhez)."""
         if self.config.trip_mode == "multiday":
             return self.find_multiday_trips(destinations=destinations, dates=dates)
         return self.find_day_trips(destinations=destinations, dates=dates)
