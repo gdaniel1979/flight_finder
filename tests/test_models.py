@@ -101,7 +101,8 @@ def test_scraper_interface():
     scraper = RyanairScraper(currency="EUR")
     assert scraper.airline == Airline.RYANAIR
     assert scraper.source_name == "ryanair-api"
-    print(f"✓ RyanairScraper OK (flyan elérhető: {scraper._flyan_available})")
+    assert scraper.supports_round_trip_search is True
+    print("✓ RyanairScraper OK")
 
 
 if __name__ == "__main__":

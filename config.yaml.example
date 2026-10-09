@@ -57,11 +57,12 @@ email:
 # Logging
 logging:
   level: "INFO"               # DEBUG, INFO, WARNING, ERROR
-  log_file: "logs/flight_finder.log"
-  max_log_size_mb: 10
-  backup_count: 5
+  log_file: "logs/flight_finder.log"                 # Eredmények (legújabb futás felül)
+  debug_log_file: "logs/flight_finder_debug.log"     # Diagnosztika: kérések, hibák (forgatva)
+  max_log_size_mb: 10         # A diagnosztikai log forgatási mérete
+  backup_count: 5             # Ennyi régi diagnosztikai logot tart meg
 
 # Rate limiting
 rate_limit:
-  request_delay: 1.5          # Minimum várakozás két API kérés között (másodperc)
-  max_retries: 3              # Maximális újrapróbálkozás sikertelen kérésnél
+  request_delay: 0.8          # Minimum várakozás két járatkeresés között (másodperc)
+  max_retries: 3              # Újrapróbálkozások száma 429/5xx válasznál

@@ -160,3 +160,61 @@ def test_ryanair_round_trip_parsing():
     assert (t.outbound.flight_number, t.inbound.flight_number) == ("FR2108", "FR3164")
     assert abs(t.total_price - 86.98) < 0.001
     assert t.nights == 0
+
+
+class FakeTwoPhaseScraper(BaseScraper):
+    """Round-trip keresés nélküli scraper: a kétfázisú úton megy, az előszűrése hibát dob."""
+
+    def __init__(self):
+        super().__init__(airline=Airline.OTHER, source_name="fake-slow")
+
+    def get_destinations(self, origin):
+        return ["BGY"]
+
+    def search_flights(self, *args, **kwargs):
+        return []
+
+    def get_cheapest_per_day(self, origin, destination, date_from, date_to):
+        raise RuntimeError("429 Too Many Requests")
+
+
+def test_two_phase_failures_are_counted():
+    f = FlightFilter(SearchConfig(), [FakeTwoPhaseScraper()])
+    assert f.find_trips(destinations=["BGY"], dates=[D1]) == []
+    # oda + vissza irány előszűrése, mindkettő hibával
+    assert f.total_requests == 2 and f.failed_requests == 2
+
+
+def test_mixed_scrapers_merge_failure_counts():
+    f = FlightFilter(SearchConfig(), [FakeRoundTripScraper(), FakeTwoPhaseScraper()])
+    trips = f.find_trips(destinations=["BGY"], dates=[D1])
+    assert len(trips) == 1
+    assert f.total_requests == 3 and f.failed_requests == 2
+
+
+class _ErrorResponse:
+    status_code = 403
+
+    def raise_for_status(self):
+        import requests
+        raise requests.HTTPError("403 Client Error: Forbidden")
+
+
+class _ErrorSession:
+    def get(self, url, params=None, timeout=None):
+        return _ErrorResponse()
+
+
+def test_ryanair_http_errors_raise():
+    import pytest
+    import requests
+
+    scraper = RyanairScraper(currency="EUR", request_delay=0)
+    scraper._session = _ErrorSession()
+
+    with pytest.raises(requests.HTTPError):
+        scraper.search_round_trips("BUD", D1, D1)
+    with pytest.raises(requests.HTTPError):
+        scraper.search_flights("BUD", "BGY", D1)
+    with pytest.raises(requests.HTTPError):
+        scraper.get_cheapest_per_day("BUD", "BGY", D1, D2)

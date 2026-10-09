@@ -45,6 +45,9 @@ class FlightFilter:
         if slow:
             slow_filter = self if not fast else FlightFilter(self.config, slow)
             trips.extend(slow_filter._find_trips_two_phase(destinations, dates))
+            if slow_filter is not self:
+                self.total_requests += slow_filter.total_requests
+                self.failed_requests += slow_filter.failed_requests
 
         trips.sort(key=lambda t: (
             t.trip_date, t.return_date,
@@ -92,8 +95,7 @@ class FlightFilter:
                         max_price=self.config.max_price,
                     )
                 except Exception as e:
-                    self.failed_requests += 1
-                    logger.error(f"Hiba {label} ({scraper.source_name}): {e}")
+                    self._record_failure(f"{label} ({scraper.source_name})", e)
                     continue
 
                 trips = [t for t in trips if self._is_wanted(t, allowed)]
@@ -102,6 +104,10 @@ class FlightFilter:
                     print(f"  [{idx}/{total}] {label}: {len(trips)} pár", flush=True)
 
         return all_trips
+
+    def _record_failure(self, what: str, error: Exception) -> None:
+        self.failed_requests += 1
+        logger.error(f"Sikertelen lekérdezés – {what}: {error}")
 
     def _is_wanted(self, trip: DayTrip, allowed: Optional[Set[str]]) -> bool:
         if allowed is not None and trip.outbound.destination not in allowed:
@@ -161,7 +167,7 @@ class FlightFilter:
                 if day_trips:
                     print(f"  [{idx}/{total}] {dest} {search_date}: {len(day_trips)} pár", flush=True)
             except Exception as e:
-                logger.error(f"Hiba {dest} {search_date}: {e}")
+                self._record_failure(f"{dest} {search_date}", e)
 
         all_trips.sort(key=lambda t: (t.trip_date, t.total_price if t.total_price is not None else float("inf")))
         return all_trips
@@ -204,16 +210,18 @@ class FlightFilter:
     ) -> Set[date]:
         dates_with_flights = set()
         for scraper in self.scrapers:
+            self.total_requests += 1
             try:
                 cheapest = scraper.get_cheapest_per_day(origin, destination, date_from, date_to)
-                for date_str, price in cheapest.items():
-                    if price is not None and price > 0:
-                        try:
-                            dates_with_flights.add(date.fromisoformat(date_str))
-                        except ValueError:
-                            pass
-            except Exception:
-                pass
+            except Exception as e:
+                self._record_failure(f"előszűrés {origin}→{destination} ({scraper.source_name})", e)
+                continue
+            for date_str, price in cheapest.items():
+                if price is not None and price > 0:
+                    try:
+                        dates_with_flights.add(date.fromisoformat(date_str))
+                    except ValueError:
+                        pass
         return dates_with_flights
 
     def _collect_all_destinations(self) -> List[str]:
@@ -222,8 +230,8 @@ class FlightFilter:
             try:
                 dests = scraper.get_destinations(self.config.origin)
                 all_dests.update(dests)
-            except Exception:
-                pass
+            except Exception as e:
+                logger.error(f"Célállomások lekérése sikertelen ({scraper.source_name}): {e}")
         return sorted(all_dests)
 
     def _search_destination_date(self, destination: str, search_date: date) -> List[DayTrip]:
@@ -231,6 +239,7 @@ class FlightFilter:
         all_inbound: List[Flight] = []
 
         for scraper in self.scrapers:
+            self.total_requests += 1
             try:
                 all_outbound.extend(scraper.search_outbound_flights(
                     origin=self.config.origin,
@@ -238,9 +247,10 @@ class FlightFilter:
                     flight_date=search_date,
                     before_hour=self.config.morning_before,
                 ))
-            except Exception:
-                pass
+            except Exception as e:
+                self._record_failure(f"oda {destination} {search_date} ({scraper.source_name})", e)
 
+            self.total_requests += 1
             try:
                 all_inbound.extend(scraper.search_return_flights(
                     origin=destination,
@@ -248,8 +258,8 @@ class FlightFilter:
                     flight_date=search_date,
                     after_hour=self.config.evening_after,
                 ))
-            except Exception:
-                pass
+            except Exception as e:
+                self._record_failure(f"vissza {destination} {search_date} ({scraper.source_name})", e)
 
         if not all_outbound or not all_inbound:
             return []
@@ -319,7 +329,7 @@ class FlightFilter:
                 if trips:
                     print(f"  [{idx}/{total}] {dest} {d_out}→{d_back}: {len(trips)} pár", flush=True)
             except Exception as e:
-                logger.error(f"Hiba {dest} {d_out}→{d_back}: {e}")
+                self._record_failure(f"{dest} {d_out}→{d_back}", e)
 
         all_trips.sort(key=lambda t: (
             t.trip_date, t.return_date,
@@ -374,6 +384,7 @@ class FlightFilter:
         all_inbound: List[Flight] = []
 
         for scraper in self.scrapers:
+            self.total_requests += 1
             try:
                 all_outbound.extend(scraper.search_outbound_flights(
                     origin=self.config.origin,
@@ -381,9 +392,10 @@ class FlightFilter:
                     flight_date=d_out,
                     before_hour=self.config.morning_before,
                 ))
-            except Exception:
-                pass
+            except Exception as e:
+                self._record_failure(f"oda {destination} {d_out} ({scraper.source_name})", e)
 
+            self.total_requests += 1
             try:
                 all_inbound.extend(scraper.search_return_flights(
                     origin=destination,
@@ -391,8 +403,8 @@ class FlightFilter:
                     flight_date=d_back,
                     after_hour=self.config.evening_after,
                 ))
-            except Exception:
-                pass
+            except Exception as e:
+                self._record_failure(f"vissza {destination} {d_back} ({scraper.source_name})", e)
 
         if not all_outbound or not all_inbound:
             return []

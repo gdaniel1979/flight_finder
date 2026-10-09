@@ -47,15 +47,15 @@ python tests/test_models.py                # Run model tests directly
 | `scrapers/ryanair_scraper.py` | `RyanairScraper` — three-strategy fallback hierarchy |
 | `notifier.py` | `EmailNotifier` — Brevo email sending with three-strategy fallback |
 
-### RyanairScraper fallback chain
+### RyanairScraper endpoints
 
-Only used by the two-phase path (`search_flights`); the fast path calls `roundTripFares` directly.
+All direct HTTP to `ryanair.com/api/farfnd/v4` (no session cookie needed):
 
-1. **flyan library** (`_search_via_flyan`) — preferred; requires `pip install flyan`
-2. **farfnd API** (`_search_via_farfnd`) — direct HTTP to `ryanair.com/api/farfnd/v4`; no session cookie needed
-3. **availability API** (`_search_via_availability`) — may require session cookie; least reliable
+- `roundTripFares` — `search_round_trips`, the fast path
+- `oneWayFares` — `search_flights`, two-phase detailed search
+- `oneWayFares/{o}/{d}/cheapestPerDay` — `get_cheapest_per_day`, two-phase pre-filter
 
-`get_cheapest_per_day` always uses the farfnd `cheapestPerDay` endpoint directly (no flyan involved).
+All three raise on HTTP errors (404 counts as empty) so `FlightFilter` can count failures. The `flyan` library and the `booking/v4/availability` fallback were removed: flyan was broken on the prod host and silently skipped, and the availability call fired on every empty farfnd result.
 
 ### EmailNotifier fallback chain
 
@@ -63,9 +63,11 @@ Only used by the two-phase path (`search_flights`); the fast path calls `roundTr
 2. `sib-api-v3-sdk`
 3. Direct HTTP POST to `api.brevo.com/v3/smtp/email`
 
-### Log file behavior
+### Log files
 
 Results are **prepended** to `logs/flight_finder.log` (newest run always at the top). This is intentional — `main.py:prepend_to_file` reads the existing content and writes new content before it.
+
+Diagnostics (per-request info lines, failed requests, email errors) go to a separate size-rotated file, `logging.debug_log_file` (default `logs/flight_finder_debug.log`; `max_log_size_mb` / `backup_count` apply to it). WARNING+ also goes to stderr, which cron appends to `logs/cron_errors.log`.
 
 ## Configuration
 
@@ -76,6 +78,7 @@ Results are **prepended** to `logs/flight_finder.log` (newest run always at the 
 - `search.min_nights` / `search.max_nights` — night range, `multiday` only
 - `search.destinations` — explicit list; empty means fetch all routes from the API
 - `search.exclude_destinations` — always-excluded IATA codes
+- `rate_limit.request_delay` / `rate_limit.max_retries` — passed to `RyanairScraper` (delay between flight searches; retries on 429/5xx)
 - `airlines.ryanair.enabled` — WizzAir and easyJet stubs exist but are not implemented (see WizzAir note below)
 - `email.enabled` — set to `true` to send results via Brevo; requires `brevo_api_key`
 - `email.recipient_emails` — **list** of recipient addresses (multi-recipient supported)
@@ -101,7 +104,6 @@ Do not re-attempt this with free tooling — it is a known dead end.
 
 - Python 3.9+
 - `pyyaml`, `requests`, `pydantic` — required
-- `flyan` — optional; enables primary Ryanair search strategy
 - `brevo` / `sib-api-v3-sdk` — optional; `notifier.py` falls back to direct HTTP without them
 
 A `requirements.txt` is checked in (frozen from the prod host); install with `pip install -r requirements.txt`.

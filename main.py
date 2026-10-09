@@ -16,6 +16,7 @@ import os
 import sys
 import tempfile
 import shutil
+from logging.handlers import RotatingFileHandler
 from datetime import date, datetime, timedelta
 from pathlib import Path
 from typing import List, Optional
@@ -28,19 +29,20 @@ from scrapers.base_scraper import BaseScraper
 from filter import FlightFilter
 
 
-# ── Logging: csak konzolra, fájlba prepend módban ──
+# ── Logging: eredmények prepend módban a log_file-ba, diagnosztika külön fájlba ──
 
 def setup_logging(config: dict) -> str:
-    """Logging beállítása. Visszaadja a log fájl elérési útját."""
+    """Logging beállítása. Visszaadja az eredmény-log fájl elérési útját."""
     log_config = config.get("logging", {})
     level_name = log_config.get("level", "INFO").upper()
-    # A scraper belső logokat elnyomjuk hacsak nem DEBUG
     level = getattr(logging, level_name, logging.INFO)
     log_file = log_config.get("log_file", "logs/flight_finder.log")
+    debug_log_file = log_config.get("debug_log_file", "logs/flight_finder_debug.log")
 
-    log_dir = os.path.dirname(log_file)
-    if log_dir:
-        os.makedirs(log_dir, exist_ok=True)
+    for path in (log_file, debug_log_file):
+        log_dir = os.path.dirname(path)
+        if log_dir:
+            os.makedirs(log_dir, exist_ok=True)
 
     root_logger = logging.getLogger()
     root_logger.setLevel(level)
@@ -50,16 +52,26 @@ def setup_logging(config: dict) -> str:
         datefmt="%Y-%m-%d %H:%M:%S",
     )
 
-    # Konzol: csak WARNING+, a lényeg a print()-ekkel megy ki
-    console_handler = logging.StreamHandler(sys.stdout)
+    # Konzol: csak WARNING+, stderr-re (cron alatt a cron_errors.log-ba kerül);
+    # a lényeg a print()-ekkel megy ki
+    console_handler = logging.StreamHandler(sys.stderr)
     console_handler.setLevel(logging.WARNING)
     console_handler.setFormatter(formatter)
     root_logger.addHandler(console_handler)
 
-    # Scraper belső logok csendesítése konzolon
-    logging.getLogger("urllib3").setLevel(logging.ERROR)
-    logging.getLogger("requests").setLevel(logging.ERROR)
-    logging.getLogger("scraper.ryanair-api").setLevel(logging.WARNING)
+    # Diagnosztikai log: a beállított szinttől minden, méret szerint forgatva
+    file_handler = RotatingFileHandler(
+        debug_log_file,
+        maxBytes=int(log_config.get("max_log_size_mb", 10) * 1024 * 1024),
+        backupCount=log_config.get("backup_count", 5),
+        encoding="utf-8",
+    )
+    file_handler.setFormatter(formatter)
+    root_logger.addHandler(file_handler)
+
+    # A HTTP könyvtárakból csak a figyelmeztetések (pl. újrapróbálkozás) kellenek
+    logging.getLogger("urllib3").setLevel(logging.WARNING)
+    logging.getLogger("requests").setLevel(logging.WARNING)
 
     return log_file
 
@@ -107,8 +119,13 @@ def build_scrapers(config: dict, currency: str) -> List[BaseScraper]:
     airlines_config = config.get("airlines", {})
 
     if airlines_config.get("ryanair", {}).get("enabled", True):
-        ryanair_currency = airlines_config["ryanair"].get("currency", currency)
-        scrapers.append(RyanairScraper(currency=ryanair_currency))
+        ryanair_currency = airlines_config.get("ryanair", {}).get("currency", currency)
+        rate_limit = config.get("rate_limit", {})
+        scrapers.append(RyanairScraper(
+            currency=ryanair_currency,
+            request_delay=rate_limit.get("request_delay", 0.8),
+            max_retries=rate_limit.get("max_retries", 3),
+        ))
 
     return scrapers
 
