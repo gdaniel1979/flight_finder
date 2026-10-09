@@ -23,6 +23,7 @@ from pydantic import ValidationError
 
 from models import SearchConfig, DayTrip
 from scrapers.ryanair_scraper import RyanairScraper
+from scrapers.wizzair_scraper import WizzairScraper
 from scrapers.base_scraper import BaseScraper
 from filter import FlightFilter
 
@@ -70,6 +71,7 @@ def setup_logging(config: dict) -> str:
     # A HTTP könyvtárakból csak a figyelmeztetések (pl. újrapróbálkozás) kellenek
     logging.getLogger("urllib3").setLevel(logging.WARNING)
     logging.getLogger("requests").setLevel(logging.WARNING)
+    logging.getLogger("primp").setLevel(logging.WARNING)
 
     return log_file
 
@@ -150,6 +152,18 @@ def build_scrapers(config: dict, currency: str) -> List[BaseScraper]:
             request_delay=rate_limit.get("request_delay", 0.8),
             max_retries=rate_limit.get("max_retries", 3),
         ))
+
+    wizzair_config = airlines_config.get("wizzair", {})
+    if wizzair_config.get("enabled", False):
+        wizzair_destinations = wizzair_config.get("destinations") or []
+        if wizzair_destinations:
+            scrapers.append(WizzairScraper(
+                destinations=wizzair_destinations,
+                currency=wizzair_config.get("currency", currency),
+                request_delay=wizzair_config.get("request_delay", 3),
+            ))
+        else:
+            print("FIGYELEM: airlines.wizzair engedélyezve, de nincs megadva destinations – kihagyva")
 
     return scrapers
 

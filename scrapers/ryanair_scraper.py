@@ -206,6 +206,7 @@ class RyanairScraper(BaseScraper):
         before_hour: int = 9,
         after_hour: int = 18,
         max_price: Optional[float] = None,
+        destinations: Optional[List[str]] = None,
     ) -> List[DayTrip]:
         """
         Járatpárok a farfnd roundTripFares végpontról: célállomásonként a

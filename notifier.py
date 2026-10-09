@@ -287,8 +287,8 @@ class EmailNotifier:
                 rows += f"""
                 <tr style="{row_style}">
                     <td style="padding:8px;border-bottom:1px solid #eee;">{date_label}</td>
-                    <td style="padding:8px;border-bottom:1px solid #eee;">{o.flight_number or '?'}<br>{o.departure_time.strftime('%H:%M')}</td>
-                    <td style="padding:8px;border-bottom:1px solid #eee;">{i.flight_number or '?'}<br>{i.departure_time.strftime('%H:%M')}</td>
+                    <td style="padding:8px;border-bottom:1px solid #eee;">{o.flight_number or o.airline.value}<br>{o.departure_time.strftime('%H:%M')}</td>
+                    <td style="padding:8px;border-bottom:1px solid #eee;">{i.flight_number or i.airline.value}<br>{i.departure_time.strftime('%H:%M')}</td>
                     <td style="padding:8px;border-bottom:1px solid #eee;">{price_str}</td>
                 </tr>"""
 

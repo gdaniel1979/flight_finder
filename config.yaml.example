@@ -33,12 +33,14 @@ airlines:
     currency: "EUR"           # Felülírja a globális currency-t ennél a légitársaságnál
 
   wizzair:
-    # Letiltva: a wizzair.com AWS WAF image-CAPTCHA mögött van.
-    # Sem requests, sem Playwright (stealth-tel sem) nem tud átjutni rajta.
-    # Engedélyezéshez fizetős scraping proxy (ScraperAPI / ZenRows) vagy
-    # CAPTCHA-megoldó szolgáltatás (2captcha) kell – lásd CLAUDE.md.
+    # A wizzair.com CAPTCHA mögött van, ezért a Wizz járatokat a Google Flights-ról
+    # olvassuk (fast-flights csomag kell hozzá). Egy kérés = egy útvonal, egy nap,
+    # egy irány, ezért csak az itt felsorolt célállomásokra keres – tartsd rövidre.
+    # Ha a Google korlátoz, a Wizz-keresés aznapra leáll (lásd CLAUDE.md).
     enabled: false
     currency: "EUR"
+    destinations: ["FCO", "NAP"]
+    request_delay: 3          # Várakozás két Google kérés között (másodperc)
 
   easyjet:
     enabled: false             # Még nincs kész

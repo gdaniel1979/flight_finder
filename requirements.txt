@@ -3,6 +3,9 @@ pydantic==2.13.0
 PyYAML==5.3.1
 requests==2.32.5
 
+# Csak akkor kell, ha airlines.wizzair.enabled: true (Google Flights lekérdezés)
+fast-flights==2.2
+
 # Opcionális:
 #   pytest               – tesztek futtatása
 #   brevo-python / sib-api-v3-sdk – Brevo SDK; nélkülük a notifier közvetlen HTTP-t használ

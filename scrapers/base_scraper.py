@@ -5,7 +5,7 @@ Absztrakt alap osztály az összes légitársasági scraper számára.
 import logging
 from abc import ABC, abstractmethod
 from datetime import date
-from typing import List, Optional, Dict
+from typing import List, Optional, Dict, Tuple
 
 from models import Flight, DayTrip, Airline
 
@@ -56,13 +56,23 @@ class BaseScraper(ABC):
         before_hour: int = 9,
         after_hour: int = 18,
         max_price: Optional[float] = None,
+        destinations: Optional[List[str]] = None,
     ) -> List[DayTrip]:
         """
-        Az adott oda/vissza napra az ÖSSZES célállomás járatpárja egyetlen kéréssel
-        (reggeli oda, esti vissza). Hálózati hibánál kivételt dob, hogy a hívó
-        számolni tudja a sikertelen lekérdezéseket.
+        Az adott oda/vissza napra a célállomások járatpárjai (reggeli oda, esti vissza).
+        `destinations`: ha meg van adva, elég ezekre keresni (a hívó úgyis szűr rá).
+        Hálózati hibánál kivételt dob, hogy a hívó számolni tudja a sikertelen
+        lekérdezéseket.
         """
         raise NotImplementedError
+
+    def take_sub_request_stats(self) -> Tuple[int, int]:
+        """
+        (összes, sikertelen) kérés a legutóbbi lekérdezés óta – olyan scraperekhez,
+        amelyek egy search_round_trips hívás alatt több kérést küldenek. Alap: (0, 0),
+        ilyenkor a hívás maga számít egy kérésnek.
+        """
+        return (0, 0)
 
     def search_outbound_flights(
         self, origin: str, destination: str, flight_date: date, before_hour: int = 9

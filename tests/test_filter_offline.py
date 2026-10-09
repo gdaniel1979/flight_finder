@@ -47,7 +47,7 @@ class FakeRoundTripScraper(BaseScraper):
     def search_flights(self, *args, **kwargs):
         raise AssertionError("a gyors úton nem szabad útvonalankénti keresést hívni")
 
-    def search_round_trips(self, origin, out_date, back_date, before_hour=9, after_hour=18, max_price=None):
+    def search_round_trips(self, origin, out_date, back_date, before_hour=9, after_hour=18, max_price=None, destinations=None):
         self.calls.append((out_date, back_date))
         if out_date in self.fail_on:
             raise RuntimeError("403 Forbidden")

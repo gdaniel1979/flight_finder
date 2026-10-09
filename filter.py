@@ -91,10 +91,18 @@ class FlightFilter:
                         before_hour=self.config.morning_before,
                         after_hour=self.config.evening_after,
                         max_price=self.config.max_price,
+                        destinations=destinations or None,
                     )
                 except Exception as e:
+                    scraper.take_sub_request_stats()
                     self._record_failure(f"{label} ({scraper.source_name})", e)
                     continue
+
+                # Több kérést küldő scraper (pl. Wizz Air) a saját kérés-statisztikáját adja
+                sub_total, sub_failed = scraper.take_sub_request_stats()
+                if sub_total:
+                    self.total_requests += sub_total - 1
+                    self.failed_requests += sub_failed
 
                 trips = [t for t in trips if self._is_wanted(t, allowed)]
                 all_trips.extend(trips)
