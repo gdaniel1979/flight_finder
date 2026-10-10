@@ -10,6 +10,7 @@ python3.9 main.py --dry-run                    # Preview destinations/dates with
 python3.9 main.py --date 2026-05-15            # Search a single specific date
 python3.9 main.py --destinations BCN,BGY,STN   # Search specific destinations only
 python3.9 main.py --config custom_config.yaml  # Use a different config file
+python3.9 main.py --all-airlines               # Ignore the weekly schedule (airlines.<key>.run_on)
 ```
 
 ## Settings web app
@@ -18,7 +19,7 @@ python3.9 main.py --config custom_config.yaml  # Use a different config file
 streamlit run webapp.py --server.port 8503 --server.address 127.0.0.1   # local only
 ```
 
-`webapp.py` is a Streamlit form over every key in `config.yaml`. The tabs follow one rule: **Keresés** holds conditions that apply to every airline, **Légitársaságok** holds everything airline-specific (one row per airline with the same three settings — enabled, own price limit, destinations — plus the request pacing of the two data sources; destinations are a multiselect labelled `NAP (Naples)` with a "Minden útvonal" option stored as `"all"`, Ryanair's choices come live from its route API, cached for a day), **Email** and **Rendszer** (logging only) the rest. Do not put an airline-specific setting on another tab.
+`webapp.py` is a Streamlit form over every key in `config.yaml`. The tabs follow one rule: **Keresés** holds conditions that apply to every airline, **Légitársaságok** holds everything airline-specific (one row per airline with the same four settings — enabled, own price limit, search schedule, destinations — plus the request pacing of the two data sources; destinations are a multiselect labelled `NAP (Naples)` with a "Minden útvonal" option stored as `"all"`, Ryanair's choices come live from its route API, cached for a day), **Email** and **Rendszer** (logging only) the rest. Do not put an airline-specific setting on another tab.
 
 `config_store.py` is shared by `main.py`, the web app and the tests: `load_config()` returns the config in one unified layout via `normalize()` (which also migrates the old `rate_limit`, `airlines.*.currency` and `airlines.wizzair.request_delay` keys), `validate()` (reuses `SearchConfig` plus IATA/email/airline checks), `describe_changes()` and an atomic `save_config()` that first copies the old file to `config.yaml.bak`.
 
@@ -104,6 +105,7 @@ Diagnostics (per-request info lines, failed requests, email errors) go to a sepa
 - `search.currency` / `search.max_price` — apply to every airline; there is no per-airline currency (price limits would not be comparable).
 - `airlines.<key>.enabled` / `.max_price` — the same two keys for every airline (`ryanair`, `wizzair`, `easyjet`, `eurowings`, `jet2`, `norwegian`, `pegasus`, `ajet`, `airbaltic`). `max_price` is that airline's own round-trip limit; `null` falls back to `search.max_price`. Implemented as `BaseScraper.max_price`, which the fast path prefers over the global limit.
 - `airlines.<key>.destinations` — `"all"` or a list of IATA codes, for every airline. `"all"` means every route in the airline's `GOOGLE_FLIGHTS_AIRLINES[...]["routes"]` list; for Ryanair it means no restriction (its routes come from the API) and a list sets `RyanairScraper.only_destinations`. Resolved by `config_store.resolve_destinations`. If `search.destinations` is set, a code must be in that list too.
+- `airlines.<key>.run_on` — `"daily"` (default) or one weekday (`"mon"`…`"sun"`): the airline is only searched by runs on that day (`config_store.runs_on`, applied in `main.airlines_skipped_today`). The run still looks `search_days` ahead, so coverage is complete but up to a week stale. `main.py --all-airlines` ignores the schedule. Skipped airlines are listed in the result log and at the bottom of the email.
 - `airlines.ryanair.request_delay` / `.max_retries` — delay between Ryanair searches; retries on 429/5xx
 - `google_flights.request_delay` — delay between Google Flights requests, shared by all Google Flights airlines
 - `email.enabled` — set to `true` to send results via Brevo; requires `brevo_api_key`

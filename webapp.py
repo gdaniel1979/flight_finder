@@ -14,6 +14,7 @@ kulcs ezért soha nem jelenik meg, a logfájlok pedig csak a projekt mappáján 
 
 import copy
 import os
+from datetime import date, timedelta
 
 import streamlit as st
 
@@ -175,12 +176,14 @@ with st.container(border=True):
     with tab_airlines:
         st.caption(
             "Minden légitársaságnál ugyanaz állítható: be van-e kapcsolva, van-e saját árlimitje "
-            "(üresen a Keresés fül limitje érvényes), és mely célállomásokra keressen. "
+            "(üresen a Keresés fül limitje érvényes), milyen gyakran keressen rá (a ritkán találatot adó "
+            "légitársaságokra elég hetente egyszer), és mely célállomásokra. "
             "A célállomások a legördülő listából választhatók; a „Minden útvonal” az adott "
             "légitársaság összes budapesti útvonalát jelenti."
         )
-        widths = [1.2, 1.3, 3.5]
-        head1, head2, head3 = st.columns(widths)
+        widths = [1.0, 1.3, 1.3, 3.0]
+        head1, head2, head_freq, head3 = st.columns(widths)
+        head_freq.markdown("**Keresés**")
         head1.markdown("**Légitársaság**")
         head2.markdown("**Saját max összár**")
         head3.markdown("**Célállomások**")
@@ -188,13 +191,21 @@ with st.container(border=True):
         airline_inputs = {}
         for key, label in config_store.AIRLINE_LABELS.items():
             airline = airlines.get(key, {})
-            col1, col2, col3 = st.columns(widths, vertical_alignment="center")
+            col1, col2, col_freq, col3 = st.columns(widths, vertical_alignment="center")
             enabled = col1.checkbox(label, value=bool(airline.get("enabled", False)), key=f"{key}_enabled")
             own_max_price = col2.number_input(
                 f"{label} saját max összár",
                 value=float(airline["max_price"]) if airline.get("max_price") is not None else None,
                 min_value=0.0, step=5.0, placeholder="alap", label_visibility="collapsed",
                 key=f"{key}_max_price",
+            )
+            run_on_options = list(config_store.RUN_ON_LABELS)
+            stored_run_on = airline.get("run_on", config_store.DAILY)
+            run_on = col_freq.selectbox(
+                f"{label} keresés gyakorisága", options=run_on_options,
+                index=run_on_options.index(stored_run_on) if stored_run_on in run_on_options else 0,
+                format_func=config_store.RUN_ON_LABELS.get, label_visibility="collapsed",
+                key=f"{key}_run_on",
             )
             stored = airline.get("destinations", ALL)
             codes, names = route_choices(key, stored)
@@ -206,7 +217,7 @@ with st.container(border=True):
                 ),
                 placeholder="Válassz célállomást", label_visibility="collapsed", key=f"{key}_destinations",
             )
-            airline_inputs[key] = (enabled, own_max_price, destinations_value)
+            airline_inputs[key] = (enabled, own_max_price, destinations_value, run_on)
 
         st.divider()
         st.caption(
@@ -228,14 +239,26 @@ with st.container(border=True):
             value=float(google.get("request_delay", 3)),
             help="A Ryanairen kívül minden légitársaságra vonatkozik.",
         )
-        route_count = config_store.google_route_count(config)
-        google_requests = route_count * int(search.get("search_days", 30))
-        google_minutes = round(google_requests * (float(google.get("request_delay", 3)) + 0.5) / 60)
-        st.caption(
-            f"Jelenleg {route_count} útvonal megy a Google Flights-ra: ez futásonként legalább "
-            f"{google_requests} kérés (útvonalanként és naponként egy, a visszautakkal valamivel több), "
-            f"nagyjából {google_minutes} perc."
-        )
+        days_ahead = int(search.get("search_days", 30))
+        seconds_per_request = float(google.get("request_delay", 3)) + 0.5
+
+        def google_load(day=None) -> str:
+            routes = config_store.google_route_count(config, day)
+            requests_count = routes * days_ahead
+            return f"{routes} útvonal, legalább {requests_count} kérés, kb. {round(requests_count * seconds_per_request / 60)} perc"
+
+        today = date.today()
+        week = [today + timedelta(days=offset) for offset in range(7)]
+        busiest = max(week, key=lambda day: config_store.google_route_count(config, day))
+        quietest = min(week, key=lambda day: config_store.google_route_count(config, day))
+        if config_store.google_route_count(config, busiest) == config_store.google_route_count(config, quietest):
+            st.caption(f"Google Flights terhelés futásonként: {google_load(today)}.")
+        else:
+            weekday_label = config_store.RUN_ON_LABELS[config_store.WEEKDAYS[busiest.weekday()]].lower()
+            st.caption(
+                f"Google Flights terhelés futásonként: a legtöbb napon {google_load(quietest)}; "
+                f"{weekday_label} {google_load(busiest)}."
+            )
 
     with tab_email:
         col1, col2 = st.columns(2, vertical_alignment="bottom")
@@ -303,9 +326,9 @@ if submitted:
     })
 
     new_airlines = new_config.setdefault("airlines", {})
-    for key, (enabled, own_max_price, destinations_value) in airline_inputs.items():
+    for key, (enabled, own_max_price, destinations_value, run_on) in airline_inputs.items():
         entry = new_airlines.setdefault(key, {})
-        entry.update({"enabled": enabled, "max_price": own_max_price})
+        entry.update({"enabled": enabled, "max_price": own_max_price, "run_on": run_on})
         # A "Minden útvonal" mindent lefed, a mellette kiválasztott kódok fölöslegesek
         entry["destinations"] = ALL if ALL in destinations_value else list(destinations_value)
     new_airlines["ryanair"].update({

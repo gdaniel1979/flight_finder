@@ -142,12 +142,23 @@ def _search_config_from(search: dict) -> SearchConfig:
     )
 
 
-def build_scrapers(config: dict, currency: str) -> List[BaseScraper]:
+def airlines_skipped_today(config: dict, today: date) -> List[str]:
+    """A bekapcsolt, de a run_on ütemezés szerint ma nem keresett légitársaságok kulcsai."""
+    return [
+        key for key in config_store.AIRLINE_LABELS
+        if config.get("airlines", {}).get(key, {}).get("enabled")
+        and not config_store.runs_on(config["airlines"][key], today)
+    ]
+
+
+def build_scrapers(config: dict, currency: str, skip: Optional[List[str]] = None) -> List[BaseScraper]:
+    """A bekapcsolt légitársaságok scraperei; a `skip` kulcsai (ma nem ütemezettek) kimaradnak."""
     scrapers: List[BaseScraper] = []
+    skip = set(skip or [])
     airlines_config = config.get("airlines", {})
 
     ryanair_config = airlines_config.get("ryanair", {})
-    if ryanair_config.get("enabled", True):
+    if ryanair_config.get("enabled", True) and "ryanair" not in skip:
         ryanair = RyanairScraper(
             currency=currency,
             request_delay=ryanair_config.get("request_delay", 0.8),
@@ -166,7 +177,7 @@ def build_scrapers(config: dict, currency: str) -> List[BaseScraper]:
     )
     for key in GOOGLE_FLIGHTS_AIRLINES:
         airline_config = airlines_config.get(key, {})
-        if not airline_config.get("enabled", False):
+        if not airline_config.get("enabled", False) or key in skip:
             continue
         destinations = config_store.resolve_destinations(key, airline_config.get("destinations"))
         if not destinations:
@@ -218,6 +229,7 @@ def format_results(
     config: SearchConfig,
     duration_sec: float,
     warning: Optional[str] = None,
+    note: Optional[str] = None,
 ) -> str:
     """Formázott eredmény string – logba és konzolra is megy."""
     now = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
@@ -237,6 +249,8 @@ def format_results(
     lines.append(f"{'─'*75}")
     if warning:
         lines.append(f"  FIGYELEM: {warning}")
+    if note:
+        lines.append(f"  {note}")
 
     if not trips:
         lines.append("  Nincs találat.")
@@ -280,6 +294,10 @@ def parse_args():
     parser.add_argument("--date", "-d", default=None, help="YYYY-MM-DD")
     parser.add_argument("--destinations", default=None, help="BCN,BGY,STN")
     parser.add_argument("--dry-run", action="store_true")
+    parser.add_argument(
+        "--all-airlines", action="store_true",
+        help="Minden bekapcsolt légitársaságra keres, a heti ütemezéstől (run_on) függetlenül",
+    )
     return parser.parse_args()
 
 
@@ -295,10 +313,18 @@ def main():
     print(f"Flight Finder indítás: {start_time.strftime('%H:%M:%S')}")
 
     # Scraperek
-    scrapers = build_scrapers(raw_config, search_config.currency)
-    if not scrapers:
+    skipped = [] if args.all_airlines else airlines_skipped_today(raw_config, date.today())
+    scrapers = build_scrapers(raw_config, search_config.currency, skip=skipped)
+    if not scrapers and not skipped:
         print("HIBA: Nincs engedélyezett scraper!")
         sys.exit(1)
+
+    # Heti ütemezésű légitársaságok, amelyekre ma nem keresünk
+    note = None
+    if skipped:
+        names = ", ".join(config_store.AIRLINE_LABELS[key] for key in skipped)
+        note = f"Ma nem keresett (heti ütemezés): {names}"
+        print(note)
 
     # Célállomások és dátumok
     destinations = resolve_destinations(raw_config, scrapers, args)
@@ -341,7 +367,7 @@ def main():
             f"sikertelen – az eredmény hiányos lehet."
         )
 
-    result_text = format_results(trips, search_config, duration, warning)
+    result_text = format_results(trips, search_config, duration, warning, note)
 
     # Konzolra
     print(result_text)
@@ -371,7 +397,7 @@ def main():
                 sender_name=email_config.get("sender_name", "Flight Finder"),
                 recipient_emails=recipient_emails,
             )
-            success = notifier.send_day_trips(trips, warning=warning)
+            success = notifier.send_day_trips(trips, warning=warning, note=note)
             print(f"  Email: {'OK' if success else 'HIBA'} → {', '.join(recipient_emails)}")
         else:
             print("  Email: hiányos konfiguráció")

@@ -7,6 +7,7 @@ oldal ugyanazt a szerkezetet látja:
     search:          minden légitársaságra érvényes keresési feltételek
     airlines:        légitársaságonként: enabled, max_price (saját limit),
                      destinations ("all" = minden útvonal, vagy IATA kódok listája),
+                     run_on ("daily" = minden futáskor, vagy a hét egy napja: "mon".."sun"),
                      a ryanairnél ezen felül request_delay, max_retries
     google_flights:  request_delay (közös a Google Flights-ról olvasott légitársaságokra)
     email, logging
@@ -23,6 +24,7 @@ import copy
 import os
 import re
 import shutil
+from datetime import date
 from typing import Any, Dict, List, Optional
 
 import yaml
@@ -37,6 +39,15 @@ IATA_RE = re.compile(r"^[A-Z]{3}$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR"]
 ALL_ROUTES = "all"   # airlines.<kulcs>.destinations értéke: a légitársaság minden útvonala
+
+# airlines.<kulcs>.run_on: mikor keressen az adott légitársaságra (a kulcsok sorrendje
+# a date.weekday() szerinti: "mon" = 0)
+DAILY = "daily"
+WEEKDAYS = ["mon", "tue", "wed", "thu", "fri", "sat", "sun"]
+RUN_ON_LABELS = {
+    DAILY: "Naponta", "mon": "Hétfőnként", "tue": "Keddenként", "wed": "Szerdánként",
+    "thu": "Csütörtökönként", "fri": "Péntekenként", "sat": "Szombatonként", "sun": "Vasárnaponként",
+}
 TRIP_MODES = ["daytrip", "multiday"]
 
 # Minden kereshető légitársaság: config kulcs → megjelenített név (a Ryanair az első)
@@ -76,6 +87,7 @@ def normalize(raw: Dict[str, Any]) -> Dict[str, Any]:
     ryanair.setdefault("enabled", True)
     ryanair.setdefault("max_price", None)
     ryanair.setdefault("destinations", ALL_ROUTES)
+    ryanair.setdefault("run_on", DAILY)
     ryanair.setdefault("request_delay", old_rate_limit.get("request_delay", 0.8))
     ryanair.setdefault("max_retries", old_rate_limit.get("max_retries", 3))
 
@@ -86,6 +98,7 @@ def normalize(raw: Dict[str, Any]) -> Dict[str, Any]:
         airline = airlines.setdefault(key, {})
         airline.setdefault("enabled", False)
         airline.setdefault("max_price", None)
+        airline.setdefault("run_on", DAILY)
         if airline.get("destinations") is None:
             airline["destinations"] = list(spec["destinations"])
 
@@ -112,6 +125,12 @@ def resolve_destinations(airline_key: str, value: Any) -> Optional[List[str]]:
         spec = GOOGLE_FLIGHTS_AIRLINES.get(airline_key)
         return list(spec["routes"]) if spec else None
     return list(value or [])
+
+
+def runs_on(airline: Dict[str, Any], day: date) -> bool:
+    """Keres-e a légitársaságra az adott napon futó keresés (a run_on ütemezés szerint)."""
+    run_on = airline.get("run_on", DAILY)
+    return run_on == DAILY or run_on == WEEKDAYS[day.weekday()]
 
 
 def destination_label(code: str, names: Optional[Dict[str, str]] = None) -> str:
@@ -162,6 +181,8 @@ def validate(config: Dict[str, Any]) -> List[str]:
         airline = airlines.get(key) or {}
         if (airline.get("max_price") or 0) < 0:
             errors.append(f"{label}: az árlimit nem lehet negatív")
+        if airline.get("run_on", DAILY) not in RUN_ON_LABELS:
+            errors.append(f"{label}: ismeretlen keresési gyakoriság: {airline.get('run_on')}")
         destinations = airline.get("destinations")
         if destinations != ALL_ROUTES:
             check_codes(f"{label} célállomások", destinations)
@@ -204,12 +225,15 @@ def validate(config: Dict[str, Any]) -> List[str]:
     return errors
 
 
-def google_route_count(config: Dict[str, Any]) -> int:
-    """Hány különböző útvonalat kérdez le a Google Flights-ról a bekapcsolt légitársaságokhoz."""
+def google_route_count(config: Dict[str, Any], day: Optional[date] = None) -> int:
+    """
+    Hány különböző útvonalat kérdez le a Google Flights-ról a bekapcsolt légitársaságokhoz.
+    `day` megadásával csak az aznap ütemezett légitársaságok számítanak.
+    """
     routes = set()
     for key in GOOGLE_FLIGHTS_AIRLINES:
         airline = (config.get("airlines") or {}).get(key) or {}
-        if airline.get("enabled"):
+        if airline.get("enabled") and (day is None or runs_on(airline, day)):
             routes.update(resolve_destinations(key, airline.get("destinations")) or [])
     return len(routes)
 

@@ -68,15 +68,18 @@ def test_normalize_migrates_old_keys():
     airlines = BASE["airlines"]
     # A Ryanair tempója a régi rate_limit blokkból jön, a Google-é a régi Wizz-kulcsból
     assert airlines["ryanair"] == {
-        "enabled": True, "max_price": None, "destinations": "all", "request_delay": 1.5, "max_retries": 2,
+        "enabled": True, "max_price": None, "destinations": "all", "run_on": "daily",
+        "request_delay": 1.5, "max_retries": 2,
     }
     assert BASE["google_flights"] == {"request_delay": 4}
     assert "rate_limit" not in BASE
-    assert airlines["wizzair"] == {"enabled": True, "destinations": ["FCO"], "max_price": 150}
+    assert airlines["wizzair"] == {"enabled": True, "destinations": ["FCO"], "max_price": 150, "run_on": "daily"}
     # Minden légitársaság ugyanazokkal a kulcsokkal szerepel; az újak kikapcsolva, alap listával
     assert list(airlines) == list(config_store.AIRLINE_LABELS)
     assert airlines["easyjet"]["enabled"] is False and "LGW" in airlines["easyjet"]["destinations"]
-    assert airlines["norwegian"] == {"enabled": False, "max_price": None, "destinations": ["CPH", "OSL", "ARN"]}
+    assert airlines["norwegian"] == {
+        "enabled": False, "max_price": None, "run_on": "daily", "destinations": ["CPH", "OSL", "ARN"],
+    }
     assert not any("currency" in airline for airline in airlines.values())
     assert BASE["custom_key"] == {"keep": "me"}
     # Idempotens, és a bemenetet nem módosítja
@@ -119,6 +122,52 @@ def test_all_routes_marker():
     assert config_store.destination_label("NAP") == "NAP (Naples)"
     assert config_store.destination_label("XXX") == "XXX"
     assert config_store.destination_label("STN", {"STN": "London"}) == "STN (London)"
+
+
+def test_weekly_schedule():
+    from datetime import date
+    import main
+
+    monday, tuesday = date(2026, 10, 12), date(2026, 10, 13)
+    config = changed(airlines={
+        "easyjet": {"enabled": True, "destinations": ["LGW", "CDG"], "run_on": "mon"},
+        "jet2": {"enabled": False, "run_on": "mon"},
+    })
+    assert config_store.validate(config) == []
+    assert "ismeretlen keresési gyakoriság" in " ".join(
+        config_store.validate(changed(airlines={"easyjet": {"run_on": "sometimes"}}))
+    )
+
+    assert config_store.runs_on(config["airlines"]["easyjet"], monday)
+    assert not config_store.runs_on(config["airlines"]["easyjet"], tuesday)
+    assert config_store.runs_on(config["airlines"]["wizzair"], tuesday)
+
+    # Hétfőn minden bekapcsolt légitársaság fut, kedden a heti ütemezésű kimarad
+    assert main.airlines_skipped_today(config, monday) == []
+    assert main.airlines_skipped_today(config, tuesday) == ["easyjet"]
+    names = lambda skip: [s.airline.value for s in main.build_scrapers(config, "EUR", skip=skip)]
+    assert names([]) == ["Ryanair", "Wizz Air", "easyJet"]
+    assert names(["easyjet"]) == ["Ryanair", "Wizz Air"]
+
+    # A Google-terhelés napfüggő: FCO (Wizz) mindig, LGW + CDG csak hétfőn
+    assert config_store.google_route_count(config) == 3
+    assert config_store.google_route_count(config, monday) == 3
+    assert config_store.google_route_count(config, tuesday) == 1
+
+
+def test_results_and_email_mention_skipped_airlines():
+    import main
+    from models import SearchConfig
+    from notifier import EmailNotifier
+
+    note = "Ma nem keresett (heti ütemezés): easyJet, Jet2"
+    assert note in main.format_results([], SearchConfig(), 1, note=note)
+
+    notifier = EmailNotifier(api_key="x", sender_email="a@b.hu", recipient_emails=["c@d.hu"])
+    sent = {}
+    notifier._send_email = lambda subject, html: sent.update(subject=subject, html=html) or True
+    assert notifier.send_day_trips([], note=note)
+    assert note in sent["html"] and sent["html"].index(note) < sent["html"].index("</body>")
 
 
 def test_google_route_count_merges_shared_routes():
@@ -211,6 +260,7 @@ def test_app_shows_every_airline_with_the_same_settings(tmp_path, monkeypatch):
         field(app.checkbox, label)
         field(app.number_input, f"{label} saját max összár")
         field(app.multiselect, f"{label} célállomások")
+        assert field(app.selectbox, f"{label} keresés gyakorisága").value == "daily"
     assert field(app.checkbox, "Wizz Air").value is True
     assert field(app.checkbox, "easyJet").value is False
     assert field(app.number_input, "Wizz Air saját max összár").value == 150
@@ -267,6 +317,7 @@ def test_app_saves_changes_in_the_unified_layout(tmp_path, monkeypatch):
     field(app.number_input, "Max összár").set_value(120.0)
     field(app.checkbox, "easyJet").set_value(True)
     field(app.multiselect, "easyJet célállomások").set_value(["LGW", "CDG"])
+    field(app.selectbox, "easyJet keresés gyakorisága").set_value("mon")
     field(app.multiselect, "Wizz Air célállomások").set_value(["FCO", "NAP"])
     field(app.multiselect, "Ryanair célállomások").set_value(["STN", "CIA"])
     field(app.number_input, "Ryanair saját max összár").set_value(90.0)
@@ -277,10 +328,15 @@ def test_app_saves_changes_in_the_unified_layout(tmp_path, monkeypatch):
     assert "Mentve" in app.success[0].value
     saved = yaml.safe_load(open(path, encoding="utf-8"))
     assert saved["search"]["max_price"] == 120
-    assert saved["airlines"]["easyjet"] == {"enabled": True, "max_price": None, "destinations": ["LGW", "CDG"]}
-    assert saved["airlines"]["wizzair"] == {"enabled": True, "destinations": ["FCO", "NAP"], "max_price": 150}
+    assert saved["airlines"]["easyjet"] == {
+        "enabled": True, "max_price": None, "run_on": "mon", "destinations": ["LGW", "CDG"],
+    }
+    assert saved["airlines"]["wizzair"] == {
+        "enabled": True, "destinations": ["FCO", "NAP"], "max_price": 150, "run_on": "daily",
+    }
     assert saved["airlines"]["ryanair"] == {
-        "enabled": True, "max_price": 90, "destinations": ["STN", "CIA"], "request_delay": 1.5, "max_retries": 2,
+        "enabled": True, "max_price": 90, "destinations": ["STN", "CIA"], "run_on": "daily",
+        "request_delay": 1.5, "max_retries": 2,
     }
     assert saved["google_flights"] == {"request_delay": 4}
     assert "rate_limit" not in saved

@@ -31,6 +31,9 @@ search:
 #   enabled      – részt vesz-e a keresésben
 #   max_price    – saját oda-vissza árlimit (null = a search.max_price érvényes)
 #   destinations – "all" (a légitársaság minden útvonala) vagy IATA kódok listája
+#   run_on       – mikor keressen rá: "daily" (minden futáskor, ez az alap) vagy a hét egy
+#                  napja ("mon", "tue", "wed", "thu", "fri", "sat", "sun"). A ritkán találatot
+#                  adó légitársaságokra elég hetente egyszer keresni.
 airlines:
   ryanair:
     enabled: true

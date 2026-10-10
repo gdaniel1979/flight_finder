@@ -70,13 +70,19 @@ class EmailNotifier:
         else:
             self.logger.info("Email: közvetlen HTTP API")
 
-    def send_day_trips(self, trips: List[DayTrip], warning: Optional[str] = None) -> bool:
+    def send_day_trips(
+        self,
+        trips: List[DayTrip],
+        warning: Optional[str] = None,
+        note: Optional[str] = None,
+    ) -> bool:
         """
         Járatpárok küldése emailben.
 
         Args:
             warning: ha a keresés részben/egészben sikertelen volt, ez a szöveg
                      kiemelve megjelenik a levélben
+            note: tájékoztató megjegyzés a levél alján (pl. a ma nem keresett légitársaságok)
 
         Returns:
             True ha sikeres, False ha nem
@@ -84,11 +90,15 @@ class EmailNotifier:
         if not trips:
             subject = self._build_empty_subject(warning)
             html = self._build_empty_html(warning)
-            return self._send_email(subject, html)
+        else:
+            subject = self._build_subject(trips)
+            html = self._build_html(trips, warning)
 
-        subject = self._build_subject(trips)
-        html = self._build_html(trips, warning)
-
+        if note:
+            html = html.replace(
+                "</body>",
+                f'<p style="color:#888;font-size:12px;margin-top:24px;">{note}</p>\n        </body>',
+            )
         return self._send_email(subject, html)
 
     def _send_email(self, subject: str, html_content: str) -> bool:
