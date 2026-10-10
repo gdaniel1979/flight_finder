@@ -24,6 +24,7 @@ streamlit run webapp.py --server.port 8503 --server.address 127.0.0.1   # local 
 
 - **There is no login** (the user's explicit choice on 2026-10-09: single user). Anyone who can reach the port can edit the settings, so two guards stay in place: the Brevo API key is never rendered (the field is always empty; leaving it empty keeps the stored key), and `validate()` only accepts log file paths that are relative and inside the project.
 - **Saving rewrites `config.yaml` with PyYAML**, so hand-written comments in it are lost (the key descriptions stay in `config.yaml.example`). Keys the form does not know are preserved.
+- The widgets deliberately sit in a plain container, not an `st.form`: a form would not rerun on input, and conditional fields (the night counts only show in multi-day mode) need the rerun. Nothing is written until "Mentés" is clicked.
 - Changes apply to the next run; nothing is restarted. The app never triggers a search.
 - `deploy/flight-finder-web.service` is the systemd unit (port 8503); installing it needs sudo and is done by hand, like the cron job.
 

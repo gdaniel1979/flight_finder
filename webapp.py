@@ -36,7 +36,7 @@ st.markdown(
     .block-container { padding-top: 1rem; padding-bottom: 1rem; max-width: 860px; }
     [data-testid="stVerticalBlock"] { gap: 0.4rem; }
     [data-testid="stHorizontalBlock"] { gap: 0.6rem; }
-    [data-testid="stForm"] { padding: 0.6rem 0.9rem 0.8rem; }
+    [data-testid="stVerticalBlockBorderWrapper"] { padding: 0.6rem 0.9rem 0.8rem; }
     [data-testid="stWidgetLabel"] { min-height: 0; margin-bottom: 0.1rem; }
     [data-testid="stWidgetLabel"] p { font-size: 0.82rem; }
     [data-testid="stRadio"] > div { margin-top: -0.3rem; }
@@ -112,7 +112,9 @@ saved_warning = st.session_state.pop("saved_warning", None)
 if saved_warning:
     st.warning(saved_warning)
 
-with st.form("settings"):
+# Nem st.form: a mezők változása azonnal újrafuttatja az oldalt, így a feltételes mezők
+# (pl. az éjszakák száma csak többnapos módban) rögtön megjelennek vagy eltűnnek
+with st.container(border=True):
     tab_search, tab_airlines, tab_email, tab_system = st.tabs(
         ["Keresés", "Légitársaságok", "Email", "Rendszer"]
     )
@@ -134,6 +136,13 @@ with st.form("settings"):
                  "A Légitársaságok fülön légitársaságonként adható ettől eltérő limit.",
         )
 
+        mode_labels = {"daytrip": "Egynapos (reggel oda, este vissza)", "multiday": "Többnapos"}
+        current_mode = search.get("trip_mode", "daytrip")
+        trip_mode = st.radio(
+            "Út típusa", options=config_store.TRIP_MODES, format_func=mode_labels.get, horizontal=True,
+            index=config_store.TRIP_MODES.index(current_mode) if current_mode in config_store.TRIP_MODES else 0,
+        )
+
         col1, col2, col3, col4 = st.columns(4)
         morning_before = col1.number_input(
             "Odaút ennyi óra előtt", min_value=0, max_value=12, step=1,
@@ -143,21 +152,12 @@ with st.form("settings"):
             "Visszaút ennyi óra után", min_value=12, max_value=23, step=1,
             value=int(search.get("evening_after", 18)),
         )
-        min_nights = col3.number_input(
-            "Min. éjszaka", min_value=1, max_value=30, step=1, value=int(search.get("min_nights", 2)),
-            help="Csak többnapos módban számít.",
-        )
-        max_nights = col4.number_input(
-            "Max. éjszaka", min_value=1, max_value=30, step=1, value=int(search.get("max_nights", 4)),
-            help="Csak többnapos módban számít.",
-        )
-
-        mode_labels = {"daytrip": "Egynapos (reggel oda, este vissza)", "multiday": "Többnapos"}
-        current_mode = search.get("trip_mode", "daytrip")
-        trip_mode = st.radio(
-            "Út típusa", options=config_store.TRIP_MODES, format_func=mode_labels.get, horizontal=True,
-            index=config_store.TRIP_MODES.index(current_mode) if current_mode in config_store.TRIP_MODES else 0,
-        )
+        # Az éjszakák száma csak többnapos útnál értelmes; egynapos módban a mentett érték marad
+        min_nights = int(search.get("min_nights", 2))
+        max_nights = int(search.get("max_nights", 4))
+        if trip_mode == "multiday":
+            min_nights = col3.number_input("Min. éjszaka", min_value=1, max_value=30, step=1, value=min_nights)
+            max_nights = col4.number_input("Max. éjszaka", min_value=1, max_value=30, step=1, value=max_nights)
 
         col1, col2 = st.columns(2)
         destinations_text = col1.text_area(
@@ -282,7 +282,7 @@ with st.form("settings"):
             value=int(logging_cfg.get("backup_count", 5)),
         )
 
-    submitted = st.form_submit_button("Mentés", type="primary")
+    submitted = st.button("Mentés", type="primary")
 
 if submitted:
     # A nem szerkesztett (ismeretlen) kulcsok változatlanul megmaradnak

@@ -232,6 +232,27 @@ def test_app_destination_pickers_list_routes_with_city_names(tmp_path, monkeypat
     assert ryanair.options == ["Minden útvonal", "BGY (Bergamo)", "STN (London)", "CIA (Rome)"]
 
 
+def test_app_shows_night_fields_only_in_multiday_mode(tmp_path, monkeypatch):
+    app, path = run_app(tmp_path, monkeypatch)
+    labels = lambda: [n.label for n in app.number_input]
+    assert "Min. éjszaka" not in labels() and "Max. éjszaka" not in labels()
+
+    field(app.radio, "Út típusa").set_value("multiday").run()
+    assert not app.exception
+    assert "Min. éjszaka" in labels() and "Max. éjszaka" in labels()
+    field(app.number_input, "Max. éjszaka").set_value(6)
+    field(app.button, "Mentés").click().run()
+    saved = yaml.safe_load(open(path, encoding="utf-8"))["search"]
+    assert (saved["trip_mode"], saved["min_nights"], saved["max_nights"]) == ("multiday", 2, 6)
+
+    # Visszaváltva eltűnnek, a mentett éjszakaszámok megmaradnak
+    field(app.radio, "Út típusa").set_value("daytrip").run()
+    assert "Min. éjszaka" not in labels()
+    field(app.button, "Mentés").click().run()
+    saved = yaml.safe_load(open(path, encoding="utf-8"))["search"]
+    assert (saved["trip_mode"], saved["min_nights"], saved["max_nights"]) == ("daytrip", 2, 6)
+
+
 def test_app_never_renders_api_key(tmp_path, monkeypatch):
     app, _ = run_app(tmp_path, monkeypatch)
     assert not app.exception
