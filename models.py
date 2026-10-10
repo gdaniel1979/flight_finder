@@ -16,6 +16,12 @@ class Airline(str, Enum):
     RYANAIR = "Ryanair"
     WIZZAIR = "Wizz Air"
     EASYJET = "easyJet"
+    EUROWINGS = "Eurowings"
+    JET2 = "Jet2"
+    NORWEGIAN = "Norwegian"
+    PEGASUS = "Pegasus"
+    AJET = "AJet"
+    AIRBALTIC = "airBaltic"
     OTHER = "Other"
 
 

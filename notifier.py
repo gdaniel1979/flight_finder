@@ -52,7 +52,7 @@ class EmailNotifier:
         api_key: str,
         sender_email: str,
         recipient_emails: List[str],
-        sender_name: str = "Ryanair Finder",
+        sender_name: str = "Flight Finder",
     ):
         self.api_key = api_key
         self.sender_email = sender_email
@@ -187,17 +187,17 @@ class EmailNotifier:
         )
         if cheapest:
             return (
-                f"Ryanair Finder - {len(trips)} járatpár - "
+                f"Flight Finder - {len(trips)} járatpár - "
                 f"Legjobb: {cheapest.outbound.destination_city or cheapest.outbound.destination} "
                 f"{cheapest.total_price:.0f} {cheapest.outbound.currency}"
             )
-        return f"Ryanair Finder - {len(trips)} járatpár találva"
+        return f"Flight Finder - {len(trips)} járatpár találva"
 
     def _build_empty_subject(self, warning: Optional[str] = None) -> str:
         today = datetime.now().strftime("%Y-%m-%d")
         if warning:
-            return f"Ryanair Finder - hibás futás, nincs találat ({today})"
-        return f"Ryanair Finder - nincs találat ({today})"
+            return f"Flight Finder - hibás futás, nincs találat ({today})"
+        return f"Flight Finder - nincs találat ({today})"
 
     @staticmethod
     def _warning_html(warning: Optional[str]) -> str:
@@ -231,6 +231,18 @@ class EmailNotifier:
         </html>
         """
 
+    @staticmethod
+    def _airline_label(trip: DayTrip) -> str:
+        """A járatpár légitársasága; ha az oda- és visszaút eltér, mindkettő."""
+        out_name, in_name = trip.outbound.airline.value, trip.inbound.airline.value
+        return out_name if out_name == in_name else f"{out_name} / {in_name}"
+
+    @staticmethod
+    def _leg_label(flight) -> str:
+        """Indulási idő, fölötte a járatszám, ha ismert (a Google Flights nem adja meg)."""
+        departure = flight.departure_time.strftime("%H:%M")
+        return f"{flight.flight_number}<br>{departure}" if flight.flight_number else departure
+
     def _build_html(self, trips: List[DayTrip], warning: Optional[str] = None) -> str:
         now = datetime.now().strftime("%Y-%m-%d %H:%M")
 
@@ -250,8 +262,14 @@ class EmailNotifier:
         for city, airport in sorted_keys:
             group_trips = groups[(city, airport)]
 
-            # Dátum szerint ascending
-            group_trips_sorted = sorted(group_trips, key=lambda t: t.trip_date)
+            # Dátum, azon belül ár szerint növekvő (ismeretlen ár a végén)
+            group_trips_sorted = sorted(
+                group_trips,
+                key=lambda t: (
+                    t.trip_date, t.return_date,
+                    t.total_price if t.total_price is not None else float("inf"),
+                ),
+            )
 
             # Legolcsóbb ár megkeresése (None-ok kizárva)
             priced = [t for t in group_trips_sorted if t.total_price is not None]
@@ -287,8 +305,9 @@ class EmailNotifier:
                 rows += f"""
                 <tr style="{row_style}">
                     <td style="padding:8px;border-bottom:1px solid #eee;">{date_label}</td>
-                    <td style="padding:8px;border-bottom:1px solid #eee;">{o.flight_number or o.airline.value}<br>{o.departure_time.strftime('%H:%M')}</td>
-                    <td style="padding:8px;border-bottom:1px solid #eee;">{i.flight_number or i.airline.value}<br>{i.departure_time.strftime('%H:%M')}</td>
+                    <td style="padding:8px;border-bottom:1px solid #eee;">{self._airline_label(trip)}</td>
+                    <td style="padding:8px;border-bottom:1px solid #eee;">{self._leg_label(o)}</td>
+                    <td style="padding:8px;border-bottom:1px solid #eee;">{self._leg_label(i)}</td>
                     <td style="padding:8px;border-bottom:1px solid #eee;">{price_str}</td>
                 </tr>"""
 
@@ -301,6 +320,7 @@ class EmailNotifier:
                     <thead>
                         <tr style="background:#f0f0f0;">
                             <th style="padding:8px;text-align:left;">Dátum</th>
+                            <th style="padding:8px;text-align:left;">Légitársaság</th>
                             <th style="padding:8px;text-align:left;">Oda</th>
                             <th style="padding:8px;text-align:left;">Vissza</th>
                             <th style="padding:8px;text-align:left;">Összár</th>

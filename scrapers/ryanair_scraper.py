@@ -82,7 +82,9 @@ class RyanairScraper(BaseScraper):
         self._session = _create_session(max_retries)
         self._request_delay = request_delay
         self._last_request_time = 0.0
-        self._destinations_cache: Dict[str, List[str]] = {}
+        self._destinations_cache: Dict[str, Dict[str, str]] = {}
+        # Ha meg van adva, csak ezekre a célállomásokra ad találatot (None = minden útvonal)
+        self.only_destinations: Optional[set] = None
 
     def _rate_limit(self, slow: bool = False):
         """Egyszerű rate limiter. slow=True a járatkereséseknél."""
@@ -98,16 +100,22 @@ class RyanairScraper(BaseScraper):
     # ──────────────────────────────────────────────
 
     def get_destinations(self, origin: str) -> List[str]:
-        """BUD-ról elérhető Ryanair célállomások IATA kódjai."""
-        if origin in self._destinations_cache:
-            return self._destinations_cache[origin]
+        """Az origin-ről elérhető Ryanair célállomások IATA kódjai (a szűkítés figyelembevételével)."""
+        codes = sorted(self.get_destination_names(origin))
+        if self.only_destinations is not None:
+            codes = [code for code in codes if code in self.only_destinations]
+        return codes
 
-        destinations = self._get_destinations_direct_api(origin)
-        if destinations:
-            self._destinations_cache[origin] = destinations
-        return destinations
+    def get_destination_names(self, origin: str) -> Dict[str, str]:
+        """Az origin-ről elérhető összes Ryanair célállomás: IATA kód → városnév."""
+        if origin not in self._destinations_cache:
+            names = self._get_destinations_direct_api(origin)
+            if not names:
+                return {}
+            self._destinations_cache[origin] = names
+        return self._destinations_cache[origin]
 
-    def _get_destinations_direct_api(self, origin: str) -> List[str]:
+    def _get_destinations_direct_api(self, origin: str) -> Dict[str, str]:
         """Célállomások lekérése a Ryanair route API-ból. Több URL-t is megpróbál."""
         urls = [
             f"{RYANAIR_VIEWS_API}/searchWidget/routes/en/airport/{origin}",
@@ -125,24 +133,23 @@ class RyanairScraper(BaseScraper):
                     continue
                 resp.raise_for_status()
                 data = resp.json()
-                destinations = []
+                names: Dict[str, str] = {}
                 for route in data:
-                    if "arrivalAirport" in route:
-                        airport = route["arrivalAirport"]
-                        iata = airport.get("iataCode") or airport.get("code")
-                        if iata:
-                            destinations.append(iata)
-                if destinations:
+                    airport = route.get("arrivalAirport") or {}
+                    iata = airport.get("iataCode") or airport.get("code")
+                    if iata:
+                        names[iata] = (airport.get("city") or {}).get("name") or airport.get("name") or iata
+                if names:
                     self.logger.info(
-                        f"{origin}: {len(destinations)} Ryanair célállomás találva (URL: {url})"
+                        f"{origin}: {len(names)} Ryanair célállomás találva (URL: {url})"
                     )
-                    return sorted(set(destinations))
+                    return names
             except requests.RequestException as e:
                 self.logger.debug(f"URL sikertelen ({url}): {e}")
                 continue
 
         self.logger.error(f"Célállomások lekérése sikertelen ({origin}): minden URL 404/hiba")
-        return []
+        return {}
 
     # ──────────────────────────────────────────────
     # 2. Útvonalankénti járatkeresés (kétfázisú út)
@@ -258,6 +265,8 @@ class RyanairScraper(BaseScraper):
                 self.logger.warning(f"roundTripFares parse hiba: {e}")
                 continue
 
+            if self.only_destinations is not None and outbound.destination not in self.only_destinations:
+                continue
             if not outbound.is_morning_departure(before_hour):
                 continue
             if not inbound.is_evening_departure(after_hour):

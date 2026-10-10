@@ -18,12 +18,14 @@ from datetime import date, datetime
 from pathlib import Path
 from typing import List, Optional
 
-import yaml
 from pydantic import ValidationError
 
+import config_store
 from models import SearchConfig, DayTrip
 from scrapers.ryanair_scraper import RyanairScraper
-from scrapers.wizzair_scraper import WizzairScraper
+from scrapers.google_flights_scraper import (
+    GOOGLE_FLIGHTS_AIRLINES, GoogleFlightsClient, GoogleFlightsScraper,
+)
 from scrapers.base_scraper import BaseScraper
 from filter import FlightFilter
 
@@ -110,8 +112,8 @@ def load_config(config_path: str) -> dict:
     if not path.exists():
         print(f"HIBA: Konfigurációs fájl nem található: {config_path}")
         sys.exit(1)
-    with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f)
+    # Egységes szerkezet (a régi kulcsokat is átemeli) – ugyanaz, amit a webapp lát
+    return config_store.load_config(str(path))
 
 
 def build_search_config(config: dict) -> SearchConfig:
@@ -141,30 +143,40 @@ def _search_config_from(search: dict) -> SearchConfig:
 
 
 def build_scrapers(config: dict, currency: str) -> List[BaseScraper]:
-    scrapers = []
+    scrapers: List[BaseScraper] = []
     airlines_config = config.get("airlines", {})
 
-    if airlines_config.get("ryanair", {}).get("enabled", True):
-        ryanair_currency = airlines_config.get("ryanair", {}).get("currency", currency)
-        rate_limit = config.get("rate_limit", {})
-        scrapers.append(RyanairScraper(
-            currency=ryanair_currency,
-            request_delay=rate_limit.get("request_delay", 0.8),
-            max_retries=rate_limit.get("max_retries", 3),
-        ))
+    ryanair_config = airlines_config.get("ryanair", {})
+    if ryanair_config.get("enabled", True):
+        ryanair = RyanairScraper(
+            currency=currency,
+            request_delay=ryanair_config.get("request_delay", 0.8),
+            max_retries=ryanair_config.get("max_retries", 3),
+        )
+        ryanair.max_price = ryanair_config.get("max_price")
+        only = config_store.resolve_destinations("ryanair", ryanair_config.get("destinations", "all"))
+        ryanair.only_destinations = set(only) if only is not None else None
+        scrapers.append(ryanair)
 
-    wizzair_config = airlines_config.get("wizzair", {})
-    if wizzair_config.get("enabled", False):
-        wizzair_destinations = wizzair_config.get("destinations") or []
-        if wizzair_destinations:
-            scrapers.append(WizzairScraper(
-                destinations=wizzair_destinations,
-                currency=wizzair_config.get("currency", currency),
-                request_delay=wizzair_config.get("request_delay", 3),
-                max_price=wizzair_config.get("max_price"),
-            ))
-        else:
-            print("FIGYELEM: airlines.wizzair engedélyezve, de nincs megadva destinations – kihagyva")
+    # A Google Flights-ról olvasott légitársaságok közös kliensen osztoznak (közös
+    # gyorsítótár és rate limit), így a közös útvonalakat csak egyszer kell lekérni
+    google_client = GoogleFlightsClient(
+        currency=currency,
+        request_delay=config.get("google_flights", {}).get("request_delay", 3),
+    )
+    for key in GOOGLE_FLIGHTS_AIRLINES:
+        airline_config = airlines_config.get(key, {})
+        if not airline_config.get("enabled", False):
+            continue
+        destinations = config_store.resolve_destinations(key, airline_config.get("destinations"))
+        if not destinations:
+            print(f"FIGYELEM: airlines.{key} bekapcsolva, de nincs megadva destinations – kihagyva")
+            continue
+        scrapers.append(GoogleFlightsScraper(
+            key, google_client,
+            destinations=destinations,
+            max_price=airline_config.get("max_price"),
+        ))
 
     return scrapers
 

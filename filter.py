@@ -76,7 +76,7 @@ class FlightFilter:
         allowed = set(destinations) if destinations else None
 
         total = len(date_pairs)
-        print(f"Keresés (roundTripFares): {total} nap-kombináció...", flush=True)
+        print(f"Keresés: {total} nap-kombináció, {len(scrapers)} légitársaság...", flush=True)
 
         all_trips: List[DayTrip] = []
         for idx, (d_out, d_back) in enumerate(date_pairs, 1):
@@ -99,11 +99,11 @@ class FlightFilter:
                     self._record_failure(f"{label} ({scraper.source_name})", e)
                     continue
 
-                # Több kérést küldő scraper (pl. Wizz Air) a saját kérés-statisztikáját adja
-                sub_total, sub_failed = scraper.take_sub_request_stats()
-                if sub_total:
-                    self.total_requests += sub_total - 1
-                    self.failed_requests += sub_failed
+                # Több kérést küldő scraper (Google Flights) a saját kérés-statisztikáját adja
+                sub_stats = scraper.take_sub_request_stats()
+                if sub_stats is not None:
+                    self.total_requests += sub_stats[0] - 1
+                    self.failed_requests += sub_stats[1]
 
                 trips = [t for t in trips if self._is_wanted(t, allowed, max_price)]
                 all_trips.extend(trips)

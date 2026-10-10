@@ -1,5 +1,18 @@
 """
-A config.yaml betöltése, ellenőrzése és mentése – a beállító webapp (webapp.py) háttere.
+A config.yaml betöltése, egységesítése, ellenőrzése és mentése.
+
+Ezt használja a kereső (main.py) és a beállító webapp (webapp.py) is, így a két
+oldal ugyanazt a szerkezetet látja:
+
+    search:          minden légitársaságra érvényes keresési feltételek
+    airlines:        légitársaságonként: enabled, max_price (saját limit),
+                     destinations ("all" = minden útvonal, vagy IATA kódok listája),
+                     a ryanairnél ezen felül request_delay, max_retries
+    google_flights:  request_delay (közös a Google Flights-ról olvasott légitársaságokra)
+    email, logging
+
+A `normalize()` a régi kulcsokat (rate_limit, airlines.*.currency,
+airlines.wizzair.request_delay) is erre a szerkezetre hozza.
 
 A mentés atomikus (ideiglenes fájl + csere), és előtte biztonsági másolat készül
 `<config>.bak` néven. A PyYAML nem őrzi meg a megjegyzéseket, ezért a webappból
@@ -10,17 +23,25 @@ import copy
 import os
 import re
 import shutil
-from typing import Any, Dict, List
+from typing import Any, Dict, List, Optional
 
 import yaml
 from pydantic import ValidationError
 
 from models import SearchConfig
+from scrapers.google_flights_scraper import (
+    CITY_NAMES, GOOGLE_FLIGHTS_AIRLINES, REQUEST_DELAY as GOOGLE_REQUEST_DELAY,
+)
 
 IATA_RE = re.compile(r"^[A-Z]{3}$")
 EMAIL_RE = re.compile(r"^[^@\s]+@[^@\s]+\.[^@\s]+$")
 LOG_LEVELS = ["DEBUG", "INFO", "WARNING", "ERROR"]
+ALL_ROUTES = "all"   # airlines.<kulcs>.destinations értéke: a légitársaság minden útvonala
 TRIP_MODES = ["daytrip", "multiday"]
+
+# Minden kereshető légitársaság: config kulcs → megjelenített név (a Ryanair az első)
+AIRLINE_LABELS = {"ryanair": "Ryanair"}
+AIRLINE_LABELS.update({key: spec["airline"].value for key, spec in GOOGLE_FLIGHTS_AIRLINES.items()})
 
 HEADER = (
     "# Flight Finder – Konfiguráció\n"
@@ -35,8 +56,68 @@ SEARCH_MODEL_KEYS = [
 
 
 def load_config(path: str) -> Dict[str, Any]:
+    """A config betöltése az egységes szerkezetben (lásd normalize)."""
     with open(path, "r", encoding="utf-8") as f:
-        return yaml.safe_load(f) or {}
+        return normalize(yaml.safe_load(f) or {})
+
+
+def normalize(raw: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Az egységes szerkezetre hozza a configot; a régi kulcsokat átemeli, a hiányzó
+    légitársaságokat kikapcsolva, az alapértelmezett célállomásaikkal veszi fel.
+    Idempotens, a bemenetet nem módosítja.
+    """
+    config = copy.deepcopy(raw)
+    airlines = config.setdefault("airlines", {})
+    old_rate_limit = config.pop("rate_limit", None) or {}
+    google = config.setdefault("google_flights", {})
+
+    ryanair = airlines.setdefault("ryanair", {})
+    ryanair.setdefault("enabled", True)
+    ryanair.setdefault("max_price", None)
+    ryanair.setdefault("destinations", ALL_ROUTES)
+    ryanair.setdefault("request_delay", old_rate_limit.get("request_delay", 0.8))
+    ryanair.setdefault("max_retries", old_rate_limit.get("max_retries", 3))
+
+    old_wizz_delay = (airlines.get("wizzair") or {}).pop("request_delay", None)
+    google.setdefault("request_delay", old_wizz_delay if old_wizz_delay is not None else GOOGLE_REQUEST_DELAY)
+
+    for key, spec in GOOGLE_FLIGHTS_AIRLINES.items():
+        airline = airlines.setdefault(key, {})
+        airline.setdefault("enabled", False)
+        airline.setdefault("max_price", None)
+        if airline.get("destinations") is None:
+            airline["destinations"] = list(spec["destinations"])
+
+    # A pénznem egységes (search.currency): légitársaságonként eltérő pénznemnél
+    # az árlimitek nem lennének összehasonlíthatók
+    for airline in airlines.values():
+        if isinstance(airline, dict):
+            airline.pop("currency", None)
+
+    # A légitársaságok mindig ugyanabban a sorrendben, az ismeretlen kulcsok a végén
+    ordered = {key: airlines[key] for key in AIRLINE_LABELS if key in airlines}
+    ordered.update({key: value for key, value in airlines.items() if key not in ordered})
+    config["airlines"] = ordered
+    return config
+
+
+def resolve_destinations(airline_key: str, value: Any) -> Optional[List[str]]:
+    """
+    A configban tárolt destinations értékből a ténylegesen keresendő lista.
+    "all": a Google Flights légitársaságoknál az összes ismert útvonal, a Ryanairnél
+    None (nincs szűkítés – minden útvonalát az API adja).
+    """
+    if value == ALL_ROUTES:
+        spec = GOOGLE_FLIGHTS_AIRLINES.get(airline_key)
+        return list(spec["routes"]) if spec else None
+    return list(value or [])
+
+
+def destination_label(code: str, names: Optional[Dict[str, str]] = None) -> str:
+    """'NAP (Naples)' – városnév a megadott szótárból vagy az ismert repülőterek közül."""
+    city = (names or {}).get(code) or CITY_NAMES.get(code)
+    return f"{code} ({city})" if city else code
 
 
 def parse_codes(text: str) -> List[str]:
@@ -50,13 +131,13 @@ def parse_lines(text: str) -> List[str]:
 
 
 def validate(config: Dict[str, Any]) -> List[str]:
-    """A hibák listája magyarul; üres lista = menthető."""
+    """A hibák listája magyarul; üres lista = menthető. Az egységes szerkezetet várja."""
     errors: List[str] = []
     search = config.get("search", {})
     airlines = config.get("airlines", {})
+    google = config.get("google_flights", {})
     email = config.get("email", {})
     logging_cfg = config.get("logging", {})
-    rate_limit = config.get("rate_limit", {})
 
     try:
         SearchConfig(**{k: search[k] for k in SEARCH_MODEL_KEYS if k in search})
@@ -74,24 +155,27 @@ def validate(config: Dict[str, Any]) -> List[str]:
     check_codes("Célállomások", search.get("destinations"))
     check_codes("Kizárt célállomások", search.get("exclude_destinations"))
 
-    def check_currency(label: str, value: Any) -> None:
-        if not IATA_RE.match(str(value or "")):
-            errors.append(f"{label}: a pénznem 3 nagybetűs kód legyen (pl. EUR)")
+    if not IATA_RE.match(str(search.get("currency") or "")):
+        errors.append("Pénznem: 3 nagybetűs kód legyen (pl. EUR)")
 
-    check_currency("Keresés pénzneme", search.get("currency"))
-    for name, airline in airlines.items():
-        if isinstance(airline, dict) and "currency" in airline:
-            check_currency(f"{name} pénzneme", airline.get("currency"))
+    for key, label in AIRLINE_LABELS.items():
+        airline = airlines.get(key) or {}
+        if (airline.get("max_price") or 0) < 0:
+            errors.append(f"{label}: az árlimit nem lehet negatív")
+        destinations = airline.get("destinations")
+        if destinations != ALL_ROUTES:
+            check_codes(f"{label} célállomások", destinations)
+            if airline.get("enabled") and not destinations:
+                errors.append(f"{label}: be van kapcsolva, de nincs kiválasztva célállomás")
 
-    wizzair = airlines.get("wizzair", {})
-    check_codes("Wizz Air célállomások", wizzair.get("destinations"))
-    if wizzair.get("enabled") and not wizzair.get("destinations"):
-        errors.append("Wizz Air: engedélyezve van, de nincs megadva célállomás")
-    if wizzair.get("enabled") and (wizzair.get("request_delay") or 0) < 1:
-        errors.append("Wizz Air: a kérések közti várakozás legalább 1 másodperc legyen")
+    if not any((airlines.get(key) or {}).get("enabled") for key in AIRLINE_LABELS):
+        errors.append("Legalább egy légitársaságot be kell kapcsolni")
 
-    if not any(isinstance(a, dict) and a.get("enabled") for a in airlines.values()):
-        errors.append("Legalább egy légitársaságot engedélyezni kell")
+    ryanair = airlines.get("ryanair") or {}
+    if (ryanair.get("request_delay") or 0) < 0:
+        errors.append("Ryanair: a várakozás nem lehet negatív")
+    if (google.get("request_delay") or 0) < 1:
+        errors.append("Google Flights: a kérések közti várakozás legalább 1 másodperc legyen")
 
     recipients = email.get("recipient_emails") or []
     for address in [email.get("sender_email")] + list(recipients):
@@ -99,11 +183,11 @@ def validate(config: Dict[str, Any]) -> List[str]:
             errors.append(f"Email: érvénytelen cím: {address}")
     if email.get("enabled"):
         if not email.get("brevo_api_key"):
-            errors.append("Email: engedélyezve van, de nincs Brevo API kulcs")
+            errors.append("Email: be van kapcsolva, de nincs Brevo API kulcs")
         if not email.get("sender_email"):
-            errors.append("Email: engedélyezve van, de nincs feladó cím")
+            errors.append("Email: be van kapcsolva, de nincs feladó cím")
         if not recipients:
-            errors.append("Email: engedélyezve van, de nincs címzett")
+            errors.append("Email: be van kapcsolva, de nincs címzett")
 
     if logging_cfg.get("level") not in LOG_LEVELS:
         errors.append(f"Naplózás: a szint ezek egyike legyen: {', '.join(LOG_LEVELS)}")
@@ -117,10 +201,17 @@ def validate(config: Dict[str, Any]) -> List[str]:
         elif os.path.isabs(log_path) or ".." in log_path.replace("\\", "/").split("/"):
             errors.append(f"Naplózás: a(z) {label} relatív útvonal legyen a projekt mappáján belül")
 
-    if (rate_limit.get("request_delay") or 0) < 0:
-        errors.append("Rate limit: a várakozás nem lehet negatív")
-
     return errors
+
+
+def google_route_count(config: Dict[str, Any]) -> int:
+    """Hány különböző útvonalat kérdez le a Google Flights-ról a bekapcsolt légitársaságokhoz."""
+    routes = set()
+    for key in GOOGLE_FLIGHTS_AIRLINES:
+        airline = (config.get("airlines") or {}).get(key) or {}
+        if airline.get("enabled"):
+            routes.update(resolve_destinations(key, airline.get("destinations")) or [])
+    return len(routes)
 
 
 def _flatten(value: Any, prefix: str = "") -> Dict[str, Any]:

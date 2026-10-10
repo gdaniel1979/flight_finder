@@ -7,8 +7,8 @@ search:
   morning_before: 9           # Reggeli határ: ennyi óra ELŐTT kell indulni (0-12)
   evening_after: 18           # Esti határ: ennyi óra UTÁN kell visszaindulni (12-23)
   search_days: 30             # Hány napra előre keresünk (1-90)
-  currency: "EUR"             # Pénznem (EUR, HUF, GBP, stb.)
-  max_price: 80               # Max összár oda-vissza (null = nincs limit)
+  currency: "EUR"             # Pénznem (EUR, HUF, GBP, stb.) – minden légitársaságra
+  max_price: 80               # Max összár oda-vissza, minden légitársaságra (null = nincs limit)
 
   # Út típusa:
   #   "daytrip"  = egynapos oda-vissza (reggel oda, este vissza, ugyanaznap)
@@ -27,25 +27,65 @@ search:
   exclude_destinations: [] # ["AMM", "BHX", "BRS", "EDI", "LIS", "LPA", "LPL", "MAD", "MAN", "NCL", "OPO", "RAK", "STN", "TFS"]
 
 # Légitársaságok beállításai
+# Minden légitársaságnál ugyanaz állítható:
+#   enabled      – részt vesz-e a keresésben
+#   max_price    – saját oda-vissza árlimit (null = a search.max_price érvényes)
+#   destinations – "all" (a légitársaság minden útvonala) vagy IATA kódok listája
 airlines:
   ryanair:
     enabled: true
-    currency: "EUR"           # Felülírja a globális currency-t ennél a légitársaságnál
+    max_price: null
+    destinations: "all"
+    request_delay: 0.8        # Várakozás két keresés között (másodperc)
+    max_retries: 3            # Újrapróbálkozások száma 429/5xx válasznál
 
+  # A többi légitársaság járatait a Google Flights-ról olvassuk (fast-flights csomag kell
+  # hozzá). Egy kérés = egy útvonal, egy nap, egy irány, ezért tartsd rövidre a listákat;
+  # a több légitársaság által is repült útvonal csak egyszer számít. Ha a Google korlátoz,
+  # ezek keresése aznapra leáll (lásd CLAUDE.md).
   wizzair:
-    # A wizzair.com CAPTCHA mögött van, ezért a Wizz járatokat a Google Flights-ról
-    # olvassuk (fast-flights csomag kell hozzá). Egy kérés = egy útvonal, egy nap,
-    # egy irány, ezért csak az itt felsorolt célállomásokra keres – tartsd rövidre.
-    # Ha a Google korlátoz, a Wizz-keresés aznapra leáll (lásd CLAUDE.md).
     enabled: false
-    currency: "EUR"
+    max_price: null
     destinations: ["FCO", "NAP"]
-    request_delay: 3          # Várakozás két Google kérés között (másodperc)
-    max_price: null        # Külön Wizz árlimit oda-vissza (null = a search.max_price érvényes)
 
   easyjet:
-    enabled: false             # Még nincs kész
-    currency: "EUR"
+    enabled: false
+    max_price: null
+    destinations: ["LGW", "SEN", "CDG", "LYS", "NTE", "BOD", "GVA", "BSL"]
+
+  eurowings:
+    enabled: false
+    max_price: null
+    destinations: ["DUS", "CGN", "HAM", "STR"]
+
+  jet2:
+    enabled: false
+    max_price: null
+    destinations: ["MAN", "BHX", "EMA", "LBA"]
+
+  norwegian:
+    enabled: false
+    max_price: null
+    destinations: ["CPH", "OSL", "ARN"]
+
+  pegasus:
+    enabled: false
+    max_price: null
+    destinations: ["SAW"]
+
+  ajet:
+    enabled: false
+    max_price: null
+    destinations: ["SAW"]
+
+  airbaltic:
+    enabled: false
+    max_price: null
+    destinations: ["RIX"]
+
+# A Google Flights-ról olvasott légitársaságok közös beállítása
+google_flights:
+  request_delay: 3            # Várakozás két Google kérés között (másodperc)
 
 # Email értesítés (Brevo API)
 email:
@@ -65,8 +105,3 @@ logging:
   debug_log_file: "logs/flight_finder_debug.log"     # Diagnosztika: kérések, hibák (forgatva)
   max_log_size_mb: 10         # A diagnosztikai log forgatási mérete
   backup_count: 5             # Ennyi régi diagnosztikai logot tart meg
-
-# Rate limiting
-rate_limit:
-  request_delay: 0.8          # Minimum várakozás két járatkeresés között (másodperc)
-  max_retries: 3              # Újrapróbálkozások száma 429/5xx válasznál

@@ -69,13 +69,13 @@ class BaseScraper(ABC):
         """
         raise NotImplementedError
 
-    def take_sub_request_stats(self) -> Tuple[int, int]:
+    def take_sub_request_stats(self) -> Optional[Tuple[int, int]]:
         """
         (összes, sikertelen) kérés a legutóbbi lekérdezés óta – olyan scraperekhez,
-        amelyek egy search_round_trips hívás alatt több kérést küldenek. Alap: (0, 0),
-        ilyenkor a hívás maga számít egy kérésnek.
+        amelyek egy search_round_trips hívás alatt több (vagy gyorsítótárból nulla)
+        kérést küldenek. Alap: None, ilyenkor a hívás maga számít egy kérésnek.
         """
-        return (0, 0)
+        return None
 
     def search_outbound_flights(
         self, origin: str, destination: str, flight_date: date, before_hour: int = 9

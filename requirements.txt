@@ -3,7 +3,7 @@ pydantic==2.13.0
 PyYAML==5.3.1
 requests==2.32.5
 
-# Csak akkor kell, ha airlines.wizzair.enabled: true (Google Flights lekérdezés)
+# Csak akkor kell, ha a Ryanairen kívül más légitársaság is be van kapcsolva (Google Flights)
 fast-flights==2.2
 
 # Csak a beállító webapphoz kell (webapp.py)
