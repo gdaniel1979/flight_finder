@@ -27,7 +27,7 @@ streamlit run webapp.py --server.port 8503 --server.address 127.0.0.1   # local 
 - **Saving rewrites `config.yaml` with PyYAML**, so hand-written comments in it are lost (the key descriptions stay in `config.yaml.example`). Keys the form does not know are preserved.
 - The widgets deliberately sit in a plain container, not an `st.form`: a form would not rerun on input, and conditional fields (the night counts only show in multi-day mode) need the rerun. Nothing is written until "Mentés" is clicked.
 - Changes apply to the next run; nothing is restarted. The app never triggers a search.
-- `deploy/flight-finder-web.service` is the systemd unit (port 8503); installing it needs sudo and is done by hand, like the cron job.
+- **Served behind nginx, not on its own port.** Since 2026-10-22 the host runs ufw and an nginx HTTPS site (`/etc/nginx/sites-available/my-life`, `134-209-226-208.sslip.io`, used by the user's personal-finance app). The settings app listens on `127.0.0.1:8503` with `--server.baseUrlPath flight-finder` (`deploy/flight-finder-web.service`) and nginx proxies `https://134-209-226-208.sslip.io/flight-finder/` to it via `deploy/nginx-flight-finder.conf`, included in that server block. Do not open port 8503 in the firewall. Installing the unit and editing nginx need sudo and are done by hand, like the cron job.
 
 ## Running tests
 
